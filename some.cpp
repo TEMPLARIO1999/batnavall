@@ -1,15 +1,22 @@
 #include <allegro.h>
+#include<time.h>
+#include<stdlib.h>
 
 void init();
 void deinit();
 int menu();
+int ** reservaMemoria();
+int Posiciona(int **Tab);
 
 int main() {
 	int op=1;
+	int **Tab1; Tab1=reservaMemoria();
+	int **Tab2; Tab2=reservaMemoria();
 	init();
 	while (op!=0) {
 		switch(menu()){
 			case 1:
+				Posiciona(Tab1);
 				break;
 			case 2:
 				break;
@@ -28,6 +35,70 @@ int main() {
 	return 0;
 }
 END_OF_MAIN()
+
+int Posiciona(int **Tab){
+	int i;
+	BITMAP *fondo=load_bitmap("dis\\pantalla.bmp",NULL);
+	BITMAP *tablero;
+	BITMAP *barco2c;
+	BITMAP *barco3c;
+	BITMAP *barco4c;
+	BITMAP *barco5c;
+	srand(time(NULL));
+	switch(rand()%4){
+		case 0:
+			tablero=load_bitmap("dis\\tableros\\fondo-0.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-0.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-0.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-0.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-0.bmp",NULL);
+			break;
+		case 1:
+			tablero=load_bitmap("dis\\tableros\\fondo-1.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-1.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-1.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-1.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-1.bmp",NULL);
+			break;
+		case 2:
+			tablero=load_bitmap("dis\\tableros\\fondo-2.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-2.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-2.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-2.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-2.bmp",NULL);
+			break;
+		case 3:
+			tablero=load_bitmap("dis\\tableros\\fondo-3.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-3.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-3.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-3.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-3.bmp",NULL);
+			break;
+	}
+	
+	while(!key[KEY_ESC]){
+		blit(tablero,fondo,0,0,50,50,660,660);
+		blit(fondo,screen,0,0,0,0,1200,750);
+		blit(barco2c,fondo,0,0,800,200,120,60);
+		blit(barco3c,fondo,0,0,1000,200,180,60);
+		blit(barco4c,fondo,0,0,800,400,240,60);
+		blit(barco5c,fondo,0,0,800,600,300,60);
+	}
+	
+}
+
+int ** reservaMemoria(){
+	int **Tab; Tab=new int*[10];
+	for(int i=0;i<10;i++){
+		*(Tab+i)=new int[10];
+	}
+	for(int i=0;i<10;i++){
+		for(int j=0;j<10;j++){
+			*(*(Tab+i)+j)=0;
+		}
+	}
+	return Tab;
+}
 
 int menu(){
 	int opcion=0;                                   //variable de control del menu
