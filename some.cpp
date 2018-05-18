@@ -1,6 +1,6 @@
 #include <allegro.h>
-#include<time.h>
-#include<stdlib.h>
+#include <time.h>
+#include <stdlib.h>
 
 BITMAP *tablero;
 BITMAP *barco2c;
@@ -83,14 +83,57 @@ int Posiciona(int **Tab){
 			barco5c=load_bitmap("dis\\barcos\\barco5c-3.bmp",NULL);
 			break;
 	}
+	int b5c_rest=1,b4c_rest=2,b3c_rest=2,b2c_rest=3;
 	
 	while(!key[KEY_ESC]){
-		blit(tablero,fondo,0,0,50,50,660,660);
+		int x=75,y=75;
+		blit(tablero,fondo,0,0,45,45,660,660);
+		if(key[KEY_E]){
+			while(!key[KEY_ENTER]){
+				if(key[KEY_RIGHT]) {
+					x+=60;
+				//	blit(barco5c,fondo,0,0,x,y,300,60);
+					readkey();
+				}
+				blit(tablero,fondo,0,0,45,45,660,660);
+					blit(barco5c,fondo,0,0,x,y,300,60);
+			
+				if(key[KEY_LEFT]) {
+					x-=60;
+				//	blit(barco5c,fondo,0,0,x,y,300,60);
+					readkey();
+				}
+				blit(tablero,fondo,0,0,45,45,660,660);
+					blit(barco5c,fondo,0,0,x,y,300,60);
+				
+				if(key[KEY_UP]) {
+					y-=60;
+				//	blit(barco5c,fondo,0,0,x,y,300,60);
+					readkey();
+				}
+				blit(tablero,fondo,0,0,45,45,660,660);
+					blit(barco5c,fondo,0,0,x,y,300,60);
+			
+				
+				if(key[KEY_DOWN]) {
+					y+=60;
+				//	blit(barco5c,fondo,0,0,x,y,300,60);
+					readkey();
+				}
+				blit(tablero,fondo,0,0,45,45,660,660);
+				blit(barco5c,fondo,0,0,x,y,300,60);
+			
+				blit(fondo,screen,0,0,0,0,1200,750);
+			}
+			
+		}
+	
 		blit(fondo,screen,0,0,0,0,1200,750);
-		blit(barco2c,fondo,0,0,800,200,120,60);
-		blit(barco3c,fondo,0,0,1000,200,180,60);
-		blit(barco4c,fondo,0,0,800,400,240,60);
-		blit(barco5c,fondo,0,0,800,600,300,60);
+		blit(barco2c,fondo,0,0,800,600,120,60);
+		blit(barco3c,fondo,0,0,800,440,180,60);
+		blit(barco4c,fondo,0,0,800,280,240,60);
+		blit(barco5c,fondo,0,0,800,120,300,60);
+		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",b5c_rest);
 	}
 	
 }
