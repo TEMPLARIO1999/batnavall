@@ -2,6 +2,19 @@
 #include<time.h>
 #include<stdlib.h>
 
+BITMAP *tablero;
+BITMAP *barco2c;
+BITMAP *barco3c;
+BITMAP *barco4c;
+BITMAP *barco5c;
+BITMAP *fondo;
+BITMAP *cursor;
+BITMAP *menu0;
+BITMAP *menu1;
+BITMAP *menu2;
+BITMAP *menu3;
+BITMAP *menu4;
+
 void init();
 void deinit();
 int menu();
@@ -39,11 +52,6 @@ END_OF_MAIN()
 int Posiciona(int **Tab){
 	int i;
 	BITMAP *fondo=load_bitmap("dis\\pantalla.bmp",NULL);
-	BITMAP *tablero;
-	BITMAP *barco2c;
-	BITMAP *barco3c;
-	BITMAP *barco4c;
-	BITMAP *barco5c;
 	srand(time(NULL));
 	switch(rand()%4){
 		case 0:
@@ -102,13 +110,13 @@ int ** reservaMemoria(){
 
 int menu(){
 	int opcion=0;                                   //variable de control del menu
-	BITMAP *fondo=create_bitmap(1200,750);           
-	BITMAP *cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
-	BITMAP *menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
-	BITMAP *menu1=load_bitmap("menu/menu-1.bmp",NULL);
-	BITMAP *menu2=load_bitmap("menu/menu-2.bmp",NULL);
-	BITMAP *menu3=load_bitmap("menu/menu-3.bmp",NULL);
-	BITMAP *menu4=load_bitmap("menu/menu-4.bmp",NULL);
+	fondo=create_bitmap(1200,750);           
+	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
+	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
+	menu1=load_bitmap("menu/menu-1.bmp",NULL);
+	menu2=load_bitmap("menu/menu-2.bmp",NULL);
+	menu3=load_bitmap("menu/menu-3.bmp",NULL);
+	menu4=load_bitmap("menu/menu-4.bmp",NULL);
 	do {
 		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {         
 			blit(menu1,fondo,0,0,0,0,1200,750);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
