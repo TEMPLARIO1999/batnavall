@@ -32,12 +32,12 @@ END_OF_MAIN()
 int menu(){
 	int opcion=0;                                   //variable de control del menu
 	BITMAP *fondo=create_bitmap(1200,750);           
-	BITMAP *cursor=load_bitmap("cursor.bmp",NULL);  //imagen del cursor
-	BITMAP *menu0=load_bitmap("menu-0.bmp",NULL);    //imagenes del menu
-	BITMAP *menu1=load_bitmap("menu-1.bmp",NULL);
-	BITMAP *menu2=load_bitmap("menu-2.bmp",NULL);
-	BITMAP *menu3=load_bitmap("menu-3.bmp",NULL);
-	BITMAP *menu4=load_bitmap("menu-4.bmp",NULL);
+	BITMAP *cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
+	BITMAP *menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
+	BITMAP *menu1=load_bitmap("menu/menu-1.bmp",NULL);
+	BITMAP *menu2=load_bitmap("menu/menu-2.bmp",NULL);
+	BITMAP *menu3=load_bitmap("menu/menu-3.bmp",NULL);
+	BITMAP *menu4=load_bitmap("menu/menu-4.bmp",NULL);
 	do {
 		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {         
 			blit(menu1,fondo,0,0,0,0,1200,750);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
