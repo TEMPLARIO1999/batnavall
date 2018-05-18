@@ -90,39 +90,21 @@ int Posiciona(int **Tab){
 		blit(tablero,fondo,0,0,45,45,660,660);
 		if(key[KEY_E]){
 			while(!key[KEY_ENTER]){
+				readkey();
 				if(key[KEY_RIGHT]) {
 					x+=60;
-				//	blit(barco5c,fondo,0,0,x,y,300,60);
-					readkey();
 				}
-				blit(tablero,fondo,0,0,45,45,660,660);
-					blit(barco5c,fondo,0,0,x,y,300,60);
-			
 				if(key[KEY_LEFT]) {
 					x-=60;
-				//	blit(barco5c,fondo,0,0,x,y,300,60);
-					readkey();
 				}
-				blit(tablero,fondo,0,0,45,45,660,660);
-					blit(barco5c,fondo,0,0,x,y,300,60);
-				
 				if(key[KEY_UP]) {
 					y-=60;
-				//	blit(barco5c,fondo,0,0,x,y,300,60);
-					readkey();
-				}
-				blit(tablero,fondo,0,0,45,45,660,660);
-					blit(barco5c,fondo,0,0,x,y,300,60);
-			
-				
+				}		
 				if(key[KEY_DOWN]) {
 					y+=60;
-				//	blit(barco5c,fondo,0,0,x,y,300,60);
-					readkey();
 				}
 				blit(tablero,fondo,0,0,45,45,660,660);
 				blit(barco5c,fondo,0,0,x,y,300,60);
-			
 				blit(fondo,screen,0,0,0,0,1200,750);
 			}
 			
