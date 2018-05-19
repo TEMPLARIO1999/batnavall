@@ -20,6 +20,7 @@ void deinit();
 int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab);
+void mover(int a);
 
 int main() {
 	int op=1;
@@ -86,38 +87,46 @@ int Posiciona(int **Tab){
 	int b5c_rest=1,b4c_rest=2,b3c_rest=2,b2c_rest=3;
 	
 	while(!key[KEY_ESC]){
-		int x=75,y=75;
 		blit(tablero,fondo,0,0,45,45,660,660);
-		if(key[KEY_E]){
-			while(!key[KEY_ENTER]){
-				readkey();
-				if(key[KEY_RIGHT]) {
-					x+=60;
-				}
-				if(key[KEY_LEFT]) {
-					x-=60;
-				}
-				if(key[KEY_UP]) {
-					y-=60;
-				}		
-				if(key[KEY_DOWN]) {
-					y+=60;
-				}
-				blit(tablero,fondo,0,0,45,45,660,660);
-				blit(barco5c,fondo,0,0,x,y,300,60);
-				blit(fondo,screen,0,0,0,0,1200,750);
+		if(key[KEY_1]){
+			int a=5; a*=60;
+			mover(a);
 			}
-			
-		}
-	
 		blit(fondo,screen,0,0,0,0,1200,750);
 		blit(barco2c,fondo,0,0,800,600,120,60);
 		blit(barco3c,fondo,0,0,800,440,180,60);
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",b5c_rest);
-	}
+		}
 	
+	
+}
+
+void mover(int a){
+	int x=75,y=75;
+	while(!key[KEY_ENTER]){
+		readkey();
+		if(key[KEY_RIGHT]) {
+			x+=60;
+			if(x+a>675) x-=60;
+		}
+		if(key[KEY_LEFT]) {
+			x-=60;
+			if(x<45) x+=60;
+		}
+		if(key[KEY_UP]) {
+			y-=60;
+			if(y<45) y+=60;
+		}		
+		if(key[KEY_DOWN]) {
+			y+=60;
+			if(y>615) y-=60;
+		}
+	blit(tablero,fondo,0,0,45,45,660,660);
+	blit(barco5c,fondo,0,0,x,y,300,60);
+	blit(fondo,screen,0,0,0,0,1200,750);
+}
 }
 
 int ** reservaMemoria(){
