@@ -21,6 +21,7 @@ BITMAP *menu2;
 BITMAP *menu3;
 BITMAP *menu4;
 SAMPLE *selection;
+FONT *mi_fuente;
 
 void init();
 void deinit();
@@ -33,6 +34,10 @@ int main() {
 	int op=1;
 	int **Tab1; Tab1=reservaMemoria();
 	int **Tab2; Tab2=reservaMemoria();
+	RGB white[] = { 63, 63, 63 };
+	mi_fuente = load_font("font\\arial.pcx", white, NULL);
+	if (!myfont)
+		abort_on_error("Couldn't load font!");
 	init();
 	while (op!=0) {
 		switch(menu()){
@@ -121,16 +126,16 @@ int Posiciona(int **Tab){
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
-		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
-		textprintf(fondo,font,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
-		textprintf(fondo,font,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
-		textprintf(fondo,font,800,580,makecol(255,255,255),"Quedan : %i",*b2c_rest);
-		textprintf(fondo,font,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
-		textprintf(fondo,font,730,310,makecol(255,255,255),"TECLA 4");
-		textprintf(fondo,font,730,470,makecol(255,255,255),"TECLA 3");
-		textprintf(fondo,font,730,630,makecol(255,255,255),"TECLA 2");
-		textprintf(fondo,font,45,20,makecol(255,255,255),"C = Cancelar");
-		textprintf(fondo,font,200,20,makecol(255,255,255),"R = Rotar Barco");
+		textprintf(fondo,mi_fuente,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
+		textprintf(fondo,mi_fuente,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
+		textprintf(fondo,mi_fuente,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
+		textprintf(fondo,mi_fuente,800,580,makecol(255,255,255),"Quedan : %i",*b2c_rest);
+		textprintf(fondo,mi_fuente,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
+		textprintf(fondo,mi_fuente,730,310,makecol(255,255,255),"TECLA 4");
+		textprintf(fondo,mi_fuente,730,470,makecol(255,255,255),"TECLA 3");
+		textprintf(fondo,mi_fuente,730,630,makecol(255,255,255),"TECLA 2");
+		textprintf(fondo,mi_fuente,45,20,makecol(255,255,255),"C = Cancelar");
+		textprintf(fondo,mi_fuente,200,20,makecol(255,255,255),"R = Rotar Barco");
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
@@ -201,6 +206,12 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo,int *rest,int *nu
 	}
 	if(key[KEY_C]) {
 		(*rest)++; (*num)++;
+	} else {
+		if(vertical>0){
+			
+		} else {
+			
+		}
 	}
 }
 
@@ -275,4 +286,5 @@ void init() {                                                                //c
 void deinit() {
 	clear_keybuf();
 	destroy_sample(selection);
+	destroy_font(mi_fuente);
 }
