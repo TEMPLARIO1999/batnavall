@@ -28,7 +28,7 @@ int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab);
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
-void imprime_barco(int **);
+void imprime_barco(int **Tab);
 
 int main() {
 	int op=1;
@@ -42,7 +42,11 @@ int main() {
 				allegro_message("¡Turno del jugador 2!");
 				Posiciona(Tab2);
 				allegro_message("INICIA PARTIDA!");
-				imprime_barco(Tab1);
+				while(!key[KEY_ESC]){
+					imprime_barco(Tab1);
+					blit(tablero,fondo,0,0,45,45,660,660);
+					blit(fondo,screen,0,0,0,0,1200,750);
+				}
 				break;
 			case 2:
 				break;
@@ -64,19 +68,20 @@ END_OF_MAIN()
 
 void imprime_barco(int **Tab){
 	int band=0,x,y;
-	while(!key[KEY_ESC]){
+	for(int a=2;a<6;a++){
 		for(int i=0;i<10;i++){
 			for(int j=0;j<10;j++){
-				if(*(*(Tab+j)+i)==1){
+				if(*(*(Tab+j)+i)==a){
 					band++;
-					if(band==5){
+					if(band==5 && a==5){
 						blit(barco5cv,tablero,0,0,x,y,60,300);
 						band=0;
 					}
-					if(band==2){
-						x=((i-1)*60)+90; y=((j-1)*60)+30;
+					if(band==1){
+						x=((i-1)*60)+90; y=((j)*60)+30;
 					}
 				}else{
+					if(band!=a) band=0;
 					switch(band){
 						case 1:
 							break;
@@ -99,38 +104,37 @@ void imprime_barco(int **Tab){
 		}
 		for(int i=0;i<10;i++){
 			for(int j=0;j<10;j++){
-				if(*(*(Tab+i)+j)==1){
+				if(*(*(Tab+i)+j)==a){
 					band++;
-					if(band==5){
-						blit(barco5c,tablero,0,0,x,y,300,60);
+					if(band==5 && a==5){
+						blit(barco5c,tablero,0,0,y,x,300,60);
 						band=0;
 					}
-					if(band==2){
-						x=((i-1)*60)+90; y=((j-1)*60)+30;
+					if(band==1){
+						x=((i-1)*60)+90; y=((j)*60)+30;
 					}
 				}else{
+					if(band!=a) band=0;
 					switch(band){
 						case 1:
 							break;
 						case 2:
-							blit(barco2c,tablero,0,0,x,y,120,60);
+							blit(barco2c,tablero,0,0,y,x,120,60);
 							break;
 						case 3:
-							blit(barco3c,tablero,0,0,x,y,180,60);
+							blit(barco3c,tablero,0,0,y,x,180,60);
 							break;
 						case 4:
-							blit(barco4c,tablero,0,0,x,y,240,60);
+							blit(barco4c,tablero,0,0,y,x,240,60);
 							break;
 						case 5:
-							blit(barco5c,tablero,0,0,x,y,300,60);
+							blit(barco5c,tablero,0,0,y,x,300,60);
 							break;
 					}
 					band=0;
 				}
 			}
 		}
-		blit(tablero,fondo,0,0,45,45,660,660);
-		blit(fondo,screen,0,0,0,0,1200,750);
 	}
 }
 
@@ -227,6 +231,7 @@ int Posiciona(int **Tab){
 			a=5; a*=60;
 			mover(a, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos);
 		}
+		
 	}
 	clear_bitmap(fondo);
 	draw_sprite(fondo, fondo_tab, 0, 0);
@@ -288,9 +293,10 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 					band=0;
 			if(band){
 				for(int i=y_tab, j=0; j<a/60; i++, j++)
-					tab[i][x_tab]=1;
+					tab[i][x_tab]=a/60;
 			} else {
 				allegro_message("¡No puedes ponerlo aquí!");
+				(*rest)++; (*num)++;
 			}
 		} else {
 			for(int i=x_tab, j=0; j<a/60; i++, j++)
@@ -298,9 +304,10 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 					band=0;
 			if(band){
 				for(int i=x_tab, j=0; j<a/60; i++, j++)
-					tab[y_tab][i]=1;
+					tab[y_tab][i]=a/60;
 			} else {
 				allegro_message("¡No puedes ponerlo aquí!");
+				(*rest)++; (*num)++;
 			}
 		}
 		for(int i=0; i<10; i++){
@@ -308,7 +315,9 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 				printf("[%i]", tab[i][j]);
 			printf("\n");
 		}
+		printf("\n");
 	}
+	imprime_barco(tab);
 }
 
 int ** reservaMemoria(){
