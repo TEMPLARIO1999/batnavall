@@ -28,6 +28,7 @@ int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab);
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo,int *,int *);
+void imprime_barco(int **);
 
 int main() {
 	int op=1;
@@ -40,6 +41,8 @@ int main() {
 				Posiciona(Tab1);
 				allegro_message("turno del jugador 2!");
 				Posiciona(Tab2);
+				allegro_message("INICIA PARTIDA!");
+				imprime_barco(Tab1);
 				break;
 			case 2:
 				break;
@@ -58,6 +61,78 @@ int main() {
 	return 0;
 }
 END_OF_MAIN()
+
+void imprime_barco(int **Tab){
+	int band=0,x,y;
+	while(!key[KEY_ESC]){
+		for(int i=0;i<10;i++){
+			for(int j=0;j<10;j++){
+				if(*(*(Tab+j)+i)==1){
+					band++;
+					if(band==5){
+						blit(barco5cv,tablero,0,0,x,y,60,300);
+						band=0;
+					}
+					if(band==2){
+						x=((i-1)*60)+90; y=((j-1)*60)+30;
+					}
+				}else{
+					switch(band){
+						case 1:
+							break;
+						case 2:
+							blit(barco2cv,tablero,0,0,x,y,60,120);
+							break;
+						case 3:
+							blit(barco3cv,tablero,0,0,x,y,60,180);
+							break;
+						case 4:
+							blit(barco4cv,tablero,0,0,x,y,60,240);
+							break;
+						case 5:
+							blit(barco5cv,tablero,0,0,x,y,60,300);
+							break;
+					}
+					band=0;
+				}
+			}
+		}
+		for(int i=0;i<10;i++){
+			for(int j=0;j<10;j++){
+				if(*(*(Tab+i)+j)==1){
+					band++;
+					if(band==5){
+						blit(barco5c,tablero,0,0,x,y,300,60);
+						band=0;
+					}
+					if(band==2){
+						x=((i-1)*60)+90; y=((j-1)*60)+30;
+					}
+				}else{
+					switch(band){
+						case 1:
+							break;
+						case 2:
+							blit(barco2c,tablero,0,0,x,y,120,60);
+							break;
+						case 3:
+							blit(barco3c,tablero,0,0,x,y,180,60);
+							break;
+						case 4:
+							blit(barco4c,tablero,0,0,x,y,240,60);
+							break;
+						case 5:
+							blit(barco5c,tablero,0,0,x,y,300,60);
+							break;
+					}
+					band=0;
+				}
+			}
+		}
+		blit(tablero,fondo,0,0,45,45,660,660);
+		blit(fondo,screen,0,0,0,0,1200,750);
+	}	
+}
 
 int Posiciona(int **Tab){
 	fondo = create_bitmap(SCREEN_W, SCREEN_H);
@@ -153,6 +228,9 @@ int Posiciona(int **Tab){
 			mover(a,barco5c, barco5cv, fondo,b5c_rest,N_barcos);
 		}
 	}
+	clear_bitmap(fondo);
+	draw_sprite(fondo, fondo_tab, 0, 0);
+	blit(fondo,screen,0,0,0,0,1200,750);
 }
 
 void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo,int *rest,int *num){
