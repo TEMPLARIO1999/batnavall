@@ -21,30 +21,25 @@ BITMAP *menu2;
 BITMAP *menu3;
 BITMAP *menu4;
 SAMPLE *selection;
-FONT *mi_fuente;
 
 void init();
 void deinit();
 int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab);
-void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo,int *,int *);
+void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
 void imprime_barco(int **);
 
 int main() {
 	int op=1;
 	int **Tab1; Tab1=reservaMemoria();
 	int **Tab2; Tab2=reservaMemoria();
-	RGB white[] = { 63, 63, 63 };
-	mi_fuente = load_font("font\\arial.pcx", white, NULL);
-	if (!myfont)
-		abort_on_error("Couldn't load font!");
 	init();
 	while (op!=0) {
 		switch(menu()){
 			case 1:
 				Posiciona(Tab1);
-				allegro_message("turno del jugador 2!");
+				allegro_message("¡Turno del jugador 2!");
 				Posiciona(Tab2);
 				allegro_message("INICIA PARTIDA!");
 				imprime_barco(Tab1);
@@ -136,7 +131,7 @@ void imprime_barco(int **Tab){
 		}
 		blit(tablero,fondo,0,0,45,45,660,660);
 		blit(fondo,screen,0,0,0,0,1200,750);
-	}	
+	}
 }
 
 int Posiciona(int **Tab){
@@ -201,36 +196,36 @@ int Posiciona(int **Tab){
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
-		textprintf(fondo,mi_fuente,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
-		textprintf(fondo,mi_fuente,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
-		textprintf(fondo,mi_fuente,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
-		textprintf(fondo,mi_fuente,800,580,makecol(255,255,255),"Quedan : %i",*b2c_rest);
-		textprintf(fondo,mi_fuente,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
-		textprintf(fondo,mi_fuente,730,310,makecol(255,255,255),"TECLA 4");
-		textprintf(fondo,mi_fuente,730,470,makecol(255,255,255),"TECLA 3");
-		textprintf(fondo,mi_fuente,730,630,makecol(255,255,255),"TECLA 2");
-		textprintf(fondo,mi_fuente,45,20,makecol(255,255,255),"C = Cancelar");
-		textprintf(fondo,mi_fuente,200,20,makecol(255,255,255),"R = Rotar Barco");
+		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
+		textprintf(fondo,font,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
+		textprintf(fondo,font,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
+		textprintf(fondo,font,800,580,makecol(255,255,255),"Quedan : %i",*b2c_rest);
+		textprintf(fondo,font,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
+		textprintf(fondo,font,730,310,makecol(255,255,255),"TECLA 4");
+		textprintf(fondo,font,730,470,makecol(255,255,255),"TECLA 3");
+		textprintf(fondo,font,730,630,makecol(255,255,255),"TECLA 2");
+		textprintf(fondo,font,45,20,makecol(255,255,255),"C = Cancelar");
+		textprintf(fondo,font,200,20,makecol(255,255,255),"R = Rotar Barco");
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
 			a=2; a*=60;
-			mover(a,barco2c, barco2cv,fondo,b2c_rest,N_barcos);                  //funcion encargada del movimiento
+			mover(a, barco2c, barco2cv,fondo, Tab, b2c_rest,N_barcos);                  //funcion encargada del movimiento
 		}
 		if(key[KEY_3] && *b3c_rest!=0){
 			(*b3c_rest)--; (*N_barcos)--;
 			a=3; a*=60;
-			mover(a,barco3c, barco3cv,fondo,b3c_rest,N_barcos);
+			mover(a, barco3c, barco3cv,fondo, Tab, b3c_rest,N_barcos);
 		}
 		if(key[KEY_4] && *b4c_rest!=0){
 			(*b4c_rest)--; (*N_barcos)--;
 			a=4; a*=60;
-			mover(a,barco4c, barco4cv,fondo,b4c_rest,N_barcos);
+			mover(a, barco4c, barco4cv,fondo, Tab, b4c_rest,N_barcos);
 		}
 		if(key[KEY_5] && *b5c_rest!=0){
 			(*b5c_rest)--; (*N_barcos)--;
 			a=5; a*=60;
-			mover(a,barco5c, barco5cv, fondo,b5c_rest,N_barcos);
+			mover(a, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos);
 		}
 	}
 	clear_bitmap(fondo);
@@ -238,7 +233,7 @@ int Posiciona(int **Tab){
 	blit(fondo,screen,0,0,0,0,1200,750);
 }
 
-void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo,int *rest,int *num){
+void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num){
 	int x=75,y=75, vertical=-1, lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45;
 	while(!key[KEY_ENTER] && !key[KEY_C]){
 		readkey();
@@ -284,11 +279,34 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo,int *rest,int *nu
 	}
 	if(key[KEY_C]) {
 		(*rest)++; (*num)++;
-	} else {
+	} 
+	if(key[KEY_ENTER]) {
+		int band=1, x_tab=(x-75)/60, y_tab=(y-75)/60;
 		if(vertical>0){
-			
+			for(int i=y_tab, j=0; j<a/60; i++, j++)
+				if(tab[i][x_tab])
+					band=0;
+			if(band){
+				for(int i=y_tab, j=0; j<a/60; i++, j++)
+					tab[i][x_tab]=1;
+			} else {
+				allegro_message("¡No puedes ponerlo aquí!");
+			}
 		} else {
-			
+			for(int i=x_tab, j=0; j<a/60; i++, j++)
+				if(tab[y_tab][i])
+					band=0;
+			if(band){
+				for(int i=x_tab, j=0; j<a/60; i++, j++)
+					tab[y_tab][i]=1;
+			} else {
+				allegro_message("¡No puedes ponerlo aquí!");
+			}
+		}
+		for(int i=0; i<10; i++){
+			for(int j=0; j<10; j++)
+				printf("[%i]", tab[i][j]);
+			printf("\n");
 		}
 	}
 }
@@ -364,5 +382,4 @@ void init() {                                                                //c
 void deinit() {
 	clear_keybuf();
 	destroy_sample(selection);
-	destroy_font(mi_fuente);
 }
