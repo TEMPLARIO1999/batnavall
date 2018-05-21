@@ -26,22 +26,29 @@ void init();
 void deinit();
 int menu();
 int ** reservaMemoria();
-int Posiciona(int **Tab);
+int Posiciona(int **Tab,char *nick);
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
 void imprime_barco(int **Tab);
+void Tab_Bar_Rand();
+void nicks(char *);
 
 int main() {
 	int op=1;
 	int **Tab1; Tab1=reservaMemoria();
 	int **Tab2; Tab2=reservaMemoria();
+	char * nick1; nick1=new char[25];
+	char * nick2; nick2=new char[25];
 	init();
 	while (op!=0) {
 		switch(menu()){
 			case 1:
-				Posiciona(Tab1);
+				nicks(nick1);
+				Posiciona(Tab1,nick1);
 				allegro_message("¡Turno del jugador 2!");
-				Posiciona(Tab2);
+				nicks(nick2);
+				Posiciona(Tab2,nick2);
 				allegro_message("INICIA PARTIDA!");
+				Tab_Bar_Rand();
 				while(!key[KEY_ESC]){
 					imprime_barco(Tab1);
 					blit(tablero,fondo,0,0,45,45,660,660);
@@ -65,6 +72,80 @@ int main() {
 	return 0;
 }
 END_OF_MAIN()
+
+void nicks(char * nickname){
+	srand(time(NULL));
+	FILE *archivo;
+	archivo = fopen("utilidades\\nicks.txt", "r");
+	int rand1 = rand() % 19, rand2 = rand() % 19, i=0;
+	char *aux1, *aux2; aux1=new char[25]; aux2=new char [25]; //nickname=" ";
+	while(!feof(archivo)){
+		fscanf(archivo, "%s %s", aux1, aux2);
+		if(i==rand1){
+			strcat(nickname, aux1);
+		}
+		i++;
+	}
+	rewind(archivo);
+	i=0;
+	while(!feof(archivo)){
+		fscanf(archivo, "%s %s", aux1, aux2);
+		if(i==rand2){
+			strcat(nickname, aux2);
+		}
+		i++;
+	}
+}
+
+void Tab_Bar_Rand(){
+	srand(time(NULL));
+	switch(rand()%4){
+		case 0:
+			tablero=load_bitmap("dis\\tableros\\fondo-0.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-0.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-0.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-0.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-0.bmp",NULL);
+			barco2cv=load_bitmap("dis\\barcos\\barco2cv-0.bmp",NULL);
+			barco3cv=load_bitmap("dis\\barcos\\barco3cv-0.bmp",NULL);
+			barco4cv=load_bitmap("dis\\barcos\\barco4cv-0.bmp",NULL);
+			barco5cv=load_bitmap("dis\\barcos\\barco5cv-0.bmp",NULL);
+			break;
+		case 1:
+			tablero=load_bitmap("dis\\tableros\\fondo-1.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-1.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-1.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-1.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-1.bmp",NULL);
+			barco2cv=load_bitmap("dis\\barcos\\barco2cv-1.bmp",NULL);
+			barco3cv=load_bitmap("dis\\barcos\\barco3cv-1.bmp",NULL);
+			barco4cv=load_bitmap("dis\\barcos\\barco4cv-1.bmp",NULL);
+			barco5cv=load_bitmap("dis\\barcos\\barco5cv-1.bmp",NULL);
+			break;
+		case 2:
+			tablero=load_bitmap("dis\\tableros\\fondo-2.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-2.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-2.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-2.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-2.bmp",NULL);
+			barco2cv=load_bitmap("dis\\barcos\\barco2cv-2.bmp",NULL);
+			barco3cv=load_bitmap("dis\\barcos\\barco3cv-2.bmp",NULL);
+			barco4cv=load_bitmap("dis\\barcos\\barco4cv-2.bmp",NULL);
+			barco5cv=load_bitmap("dis\\barcos\\barco5cv-2.bmp",NULL);
+			break;
+		case 3:
+			tablero=load_bitmap("dis\\tableros\\fondo-3.bmp",NULL);
+			barco2c=load_bitmap("dis\\barcos\\barco2c-3.bmp",NULL);
+			barco3c=load_bitmap("dis\\barcos\\barco3c-3.bmp",NULL);
+			barco4c=load_bitmap("dis\\barcos\\barco4c-3.bmp",NULL);
+			barco5c=load_bitmap("dis\\barcos\\barco5c-3.bmp",NULL);
+			barco2cv=load_bitmap("dis\\barcos\\barco2cv-3.bmp",NULL);
+			barco3cv=load_bitmap("dis\\barcos\\barco3cv-3.bmp",NULL);
+			barco4cv=load_bitmap("dis\\barcos\\barco4cv-3.bmp",NULL);
+			barco5cv=load_bitmap("dis\\barcos\\barco5cv-3.bmp",NULL);
+			break;
+	}
+}
 
 void imprime_barco(int **Tab){
 	int band=0,x,y;
@@ -138,57 +219,11 @@ void imprime_barco(int **Tab){
 	}
 }
 
-int Posiciona(int **Tab){
+int Posiciona(int **Tab,char *nick){
 	fondo = create_bitmap(SCREEN_W, SCREEN_H);
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
-	srand(time(NULL));
 	selection = load_wav("sonidos\\seleccion.wav");
-	switch(rand()%4){
-		case 0:
-			tablero=load_bitmap("dis\\tableros\\fondo-0.bmp",NULL);
-			barco2c=load_bitmap("dis\\barcos\\barco2c-0.bmp",NULL);
-			barco3c=load_bitmap("dis\\barcos\\barco3c-0.bmp",NULL);
-			barco4c=load_bitmap("dis\\barcos\\barco4c-0.bmp",NULL);
-			barco5c=load_bitmap("dis\\barcos\\barco5c-0.bmp",NULL);
-			barco2cv=load_bitmap("dis\\barcos\\barco2cv-0.bmp",NULL);
-			barco3cv=load_bitmap("dis\\barcos\\barco3cv-0.bmp",NULL);
-			barco4cv=load_bitmap("dis\\barcos\\barco4cv-0.bmp",NULL);
-			barco5cv=load_bitmap("dis\\barcos\\barco5cv-0.bmp",NULL);
-			break;
-		case 1:
-			tablero=load_bitmap("dis\\tableros\\fondo-1.bmp",NULL);
-			barco2c=load_bitmap("dis\\barcos\\barco2c-1.bmp",NULL);
-			barco3c=load_bitmap("dis\\barcos\\barco3c-1.bmp",NULL);
-			barco4c=load_bitmap("dis\\barcos\\barco4c-1.bmp",NULL);
-			barco5c=load_bitmap("dis\\barcos\\barco5c-1.bmp",NULL);
-			barco2cv=load_bitmap("dis\\barcos\\barco2cv-1.bmp",NULL);
-			barco3cv=load_bitmap("dis\\barcos\\barco3cv-1.bmp",NULL);
-			barco4cv=load_bitmap("dis\\barcos\\barco4cv-1.bmp",NULL);
-			barco5cv=load_bitmap("dis\\barcos\\barco5cv-1.bmp",NULL);
-			break;
-		case 2:
-			tablero=load_bitmap("dis\\tableros\\fondo-2.bmp",NULL);
-			barco2c=load_bitmap("dis\\barcos\\barco2c-2.bmp",NULL);
-			barco3c=load_bitmap("dis\\barcos\\barco3c-2.bmp",NULL);
-			barco4c=load_bitmap("dis\\barcos\\barco4c-2.bmp",NULL);
-			barco5c=load_bitmap("dis\\barcos\\barco5c-2.bmp",NULL);
-			barco2cv=load_bitmap("dis\\barcos\\barco2cv-2.bmp",NULL);
-			barco3cv=load_bitmap("dis\\barcos\\barco3cv-2.bmp",NULL);
-			barco4cv=load_bitmap("dis\\barcos\\barco4cv-2.bmp",NULL);
-			barco5cv=load_bitmap("dis\\barcos\\barco5cv-2.bmp",NULL);
-			break;
-		case 3:
-			tablero=load_bitmap("dis\\tableros\\fondo-3.bmp",NULL);
-			barco2c=load_bitmap("dis\\barcos\\barco2c-3.bmp",NULL);
-			barco3c=load_bitmap("dis\\barcos\\barco3c-3.bmp",NULL);
-			barco4c=load_bitmap("dis\\barcos\\barco4c-3.bmp",NULL);
-			barco5c=load_bitmap("dis\\barcos\\barco5c-3.bmp",NULL);
-			barco2cv=load_bitmap("dis\\barcos\\barco2cv-3.bmp",NULL);
-			barco3cv=load_bitmap("dis\\barcos\\barco3cv-3.bmp",NULL);
-			barco4cv=load_bitmap("dis\\barcos\\barco4cv-3.bmp",NULL);
-			barco5cv=load_bitmap("dis\\barcos\\barco5cv-3.bmp",NULL);
-			break;
-	}
+	Tab_Bar_Rand();
 	int *b5c_rest=new int,*b4c_rest=new int,*b3c_rest=new int,*b2c_rest=new int,*N_barcos=new int,a;
 	*b5c_rest=1; *b4c_rest=2; *b3c_rest=2; *b2c_rest=3; *N_barcos=8; 
 	while(*N_barcos!=0 && !key[KEY_ESC]){
@@ -200,6 +235,7 @@ int Posiciona(int **Tab){
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
+		textprintf(fondo,font,800,50,makecol(255,255,255),"JUGADOR %s",nick);
 		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
 		textprintf(fondo,font,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
 		textprintf(fondo,font,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
@@ -234,6 +270,7 @@ int Posiciona(int **Tab){
 		
 	}
 	clear_bitmap(fondo);
+	clear_bitmap(tablero);
 	draw_sprite(fondo, fondo_tab, 0, 0);
 	blit(fondo,screen,0,0,0,0,1200,750);
 }
