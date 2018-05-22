@@ -21,6 +21,7 @@ BITMAP *menu2;
 BITMAP *menu3;
 BITMAP *menu4;
 SAMPLE *selection;
+BITMAP *barco_des;
 
 void init();
 void deinit();
@@ -32,19 +33,22 @@ void imprime_barco(int **Tab);
 void Tab_Bar_Rand();
 void nicks(char *);
 void copy(char *,char *);
-void ataque(int **Tab1,int *x,int *y);
+void ataque(int **Tab,int **TabA);
 
 int main() {
+	barco_des=load_bitmap("dis\\barcos_des.bmp",NULL);
 	int op=1;
-	int *x,*y; x=new int; y=new int;
-	int **Tab1; Tab1=reservaMemoria();
-	int **Tab2; Tab2=reservaMemoria();
+	int *score1,*score2; score1=new int; score2=new int;
+	int **Tab1,**TabA1; Tab1=reservaMemoria(); TabA1=reservaMemoria();
+	int **Tab2,**TabA2; Tab2=reservaMemoria(); TabA2=reservaMemoria();
 	char * nick1; nick1=new char[25];
 	char * nick2; nick2=new char[25];
 	init();
 	while (op!=0) {
 		switch(menu()){
 			case 1:
+				*score1=0; *score2=0;
+				allegro_message("¡Turno del jugador 1!");
 				nicks(nick1);
 				Posiciona(Tab1,nick1);
 				allegro_message("¡Turno del jugador 2!");
@@ -52,7 +56,27 @@ int main() {
 				Posiciona(Tab2,nick2);
 				allegro_message("INICIA PARTIDA!");
 				Tab_Bar_Rand();
-				ataque(Tab1,x,y);
+				while(!key[KEY_ESC] && *score1!=25 && *score2!=25){
+					allegro_message("¡Daños del jugador 1!");
+					while(!key[KEY_O]){
+							for(int i=0;i<10;i++){
+								for(int j=0;j<10;j++){
+									if(*(*(TabA2+i)+j)==6)
+										draw_sprite(tablero, barco_des, i*60+75, j*60+75);
+								}
+							}
+						imprime_barco(Tab1);
+						textprintf(fondo,font,30,30,makecol(255,255,255),"O = ESTA BIEN");
+						blit(tablero,fondo,0,0,45,45,660,660);
+						blit(fondo,screen,0,0,0,0,1200,750);
+					}
+					clear(fondo);
+					draw_sprite(fondo, fondo_tab, 0, 0);
+					blit(fondo,screen,0,0,0,0,1200,750);
+					allegro_message("¡Ataque del jugador 1!");
+					ataque(Tab2,TabA2);
+				}
+			
 				break;
 			case 2:
 				break;
@@ -72,17 +96,27 @@ int main() {
 }
 END_OF_MAIN()
 
-void ataque(int **Tab1,int *x,int *y){
-	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
-	while(!key[KEY_ESC]){
-		imprime_barco(Tab1);
+void ataque(int **Tab, int **TabA){
+	int *x,*y; x=new int; y=new int;
+	int band=1;
+	cursor=load_bitmap("dis//cursor.bmp",NULL);  //imagen del cursor
+	while(band!=0){
+		imprime_barco(TabA);
 		blit(tablero,fondo,0,0,45,45,660,660);
 		if((mouse_x>75 && mouse_y>75) && (mouse_x<675 && mouse_y<675)){
 			masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);                  //imprime el cursor, respetando su transparencia en fondo
 			if(mouse_b & 1) {
 				*x=(mouse_x-75)/60;
 				*y=(mouse_y-75)/60;
-				break;
+				if(*(*(Tab + *x)+*y)>1 && *(*(Tab +*x)+*y)<5){
+					*(*(TabA+*x)+*y)=6;
+					*(*(Tab+*x)+*y)=8;
+					allegro_message("¡ACERTASTE TIRA DE NUEVO!");
+				}else{
+					*(*(TabA+*x)+*y)=7;
+					allegro_message("¡TIRO AL AGUA!");
+					band=0;
+				}
 			}
 		}
 		blit(fondo,screen,0,0,0,0,1200,750);
