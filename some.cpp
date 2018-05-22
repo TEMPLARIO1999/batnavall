@@ -31,9 +31,12 @@ void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, i
 void imprime_barco(int **Tab);
 void Tab_Bar_Rand();
 void nicks(char *);
+void copy(char *,char *);
+void ataque(int **Tab1,int *x,int *y);
 
 int main() {
 	int op=1;
+	int *x,*y; x=new int; y=new int;
 	int **Tab1; Tab1=reservaMemoria();
 	int **Tab2; Tab2=reservaMemoria();
 	char * nick1; nick1=new char[25];
@@ -49,11 +52,7 @@ int main() {
 				Posiciona(Tab2,nick2);
 				allegro_message("INICIA PARTIDA!");
 				Tab_Bar_Rand();
-				while(!key[KEY_ESC]){
-					imprime_barco(Tab1);
-					blit(tablero,fondo,0,0,45,45,660,660);
-					blit(fondo,screen,0,0,0,0,1200,750);
-				}
+				ataque(Tab1,x,y);
 				break;
 			case 2:
 				break;
@@ -73,12 +72,29 @@ int main() {
 }
 END_OF_MAIN()
 
+void ataque(int **Tab1,int *x,int *y){
+	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
+	while(!key[KEY_ESC]){
+		imprime_barco(Tab1);
+		blit(tablero,fondo,0,0,45,45,660,660);
+		if((mouse_x>75 && mouse_y>75) && (mouse_x<675 && mouse_y<675)){
+			masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);                  //imprime el cursor, respetando su transparencia en fondo
+			if(mouse_b & 1) {
+				*x=(mouse_x-75)/60;
+				*y=(mouse_y-75)/60;
+				break;
+			}
+		}
+		blit(fondo,screen,0,0,0,0,1200,750);
+	}
+}
+
 void nicks(char * nickname){
 	srand(time(NULL));
 	FILE *archivo;
 	archivo = fopen("utilidades\\nicks.txt", "r");
 	int rand1 = rand() % 19, rand2 = rand() % 19, i=0;
-	char *aux1, *aux2; aux1=new char[25]; aux2=new char [25]; //nickname=" ";
+	char *aux1, *aux2; aux1=new char[25]; aux2=new char [25]; 
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand1){
@@ -91,9 +107,16 @@ void nicks(char * nickname){
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand2){
+			strcat(nickname," ");
 			strcat(nickname, aux2);
 		}
 		i++;
+	}
+	fclose(archivo);
+	for(int i=0;*(nickname +i)!='\0';i++){
+		if(*(nickname +i)>96 && *(nickname +i)<123){
+			*(nickname +i)-=32;
+		}
 	}
 }
 
@@ -235,17 +258,18 @@ int Posiciona(int **Tab,char *nick){
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
-		textprintf(fondo,font,800,50,makecol(255,255,255),"JUGADOR %s",nick);
-		textprintf(fondo,font,800,100,makecol(255,255,255),"Quedan : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
-		textprintf(fondo,font,800,260,makecol(255,255,255),"Quedan : %i",*b4c_rest);
-		textprintf(fondo,font,800,420,makecol(255,255,255),"Quedan : %i",*b3c_rest);
-		textprintf(fondo,font,800,580,makecol(255,255,255),"Quedan : %i",*b2c_rest);
+		textprintf(fondo,font,800,50,makecol(255,255,255),"NOMBRE JUGADOR %s",nick);
+		textprintf(fondo,font,800,100,makecol(255,255,255),"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
+		textprintf(fondo,font,800,260,makecol(255,255,255),"QUEDAN : %i",*b4c_rest);
+		textprintf(fondo,font,800,420,makecol(255,255,255),"QUEDAN : %i",*b3c_rest);
+		textprintf(fondo,font,800,580,makecol(255,255,255),"QUEDAN : %i",*b2c_rest);
 		textprintf(fondo,font,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
 		textprintf(fondo,font,730,310,makecol(255,255,255),"TECLA 4");
 		textprintf(fondo,font,730,470,makecol(255,255,255),"TECLA 3");
 		textprintf(fondo,font,730,630,makecol(255,255,255),"TECLA 2");
-		textprintf(fondo,font,45,20,makecol(255,255,255),"C = Cancelar");
-		textprintf(fondo,font,200,20,makecol(255,255,255),"R = Rotar Barco");
+		textprintf(fondo,font,45,20,makecol(255,255,255),"C = CANCELAR");
+		textprintf(fondo,font,200,20,makecol(255,255,255),"R = ROTAR BARCO");
+		textprintf(fondo,font,400,20,makecol(255,255,255),"A = AYUDA");
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
@@ -267,12 +291,39 @@ int Posiciona(int **Tab,char *nick){
 			a=5; a*=60;
 			mover(a, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos);
 		}
-		
+		if(key[KEY_A]){                                                        //ayuda 
+			draw_sprite(fondo, fondo_tab, 0, 0);
+			FILE * ayuda_barco;
+			ayuda_barco=fopen("utilidades\\Como posicionar barcos.txt","r");
+			char *aux0, *aux1; aux0=new char[120]; aux1=new char[120];
+			int x=100,y=100;
+			while(!key[KEY_B]){
+				fscanf(ayuda_barco, "%s", aux0);
+				while(!feof(ayuda_barco)){
+					copy(aux0,aux1);
+			 		textprintf(fondo,font,x,y,makecol(255,255,255),"%s",aux1);
+					fscanf(ayuda_barco, "%s ", aux0);
+					y+=45;
+				}
+			blit(fondo,screen,0,0,0,0,1200,750);
+			}
+			fclose(ayuda_barco);
+		}
 	}
 	clear_bitmap(fondo);
 	clear_bitmap(tablero);
 	draw_sprite(fondo, fondo_tab, 0, 0);
 	blit(fondo,screen,0,0,0,0,1200,750);
+}
+
+void copy(char *aux,char *aux0){
+	for(int i=0;i<120;i++) *(aux0 + i)=0;
+	for(int i=0;*(aux +i)!='\0';i++){
+		if(*(aux + i)==95) *(aux0 +i)=32;
+	  	else if(*(aux +i)>96 && *(aux +i)<123) *(aux0 +i)=*(aux +i)-32;
+		else *(aux0 +i)=*(aux +i);
+	}
+	
 }
 
 void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num){
