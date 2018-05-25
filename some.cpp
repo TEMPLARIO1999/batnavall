@@ -98,9 +98,9 @@ int ataque(int **Tab, int **TabA,int **Tab1, int **Tab2, int jugador){
 	cursor=load_bitmap("dis/cursor.bmp",NULL);
 	while(1){
 		if(jugador==1)
-			imprime_barco(Tab, Tab1);
+			imprime_barco(Tab, Tab2);
 		else
-			imprime_barco(TabA, Tab2);
+			imprime_barco(TabA, Tab1);
 		blit(tablero,fondo,0,0,45,45,660,660);
 		show_mouse(fondo);
 		blit(fondo,screen,0,0,0,0,1200,750);
