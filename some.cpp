@@ -29,54 +29,53 @@ int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab,char *nick);
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
-void imprime_barco(int **Tab);
-void Tab_Bar_Rand();
+void imprime_barco(int **Tab, int **Tab_danio);
+int Tab_Bar_Rand(int);
 void nicks(char *);
 void copy(char *,char *);
-void ataque(int **Tab,int **TabA);
+int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador);
+void operar_juego();
 
 int main() {
-	barco_des=load_bitmap("dis\\barcos_des.bmp",NULL);
-	int op=1;
+	operar_juego();
+	return 0;
+}
+
+END_OF_MAIN()
+
+void operar_juego(){
+	srand(time(NULL));
+	int op=1, turno=(rand()%2)+1;
 	int *score1,*score2; score1=new int; score2=new int;
 	int **Tab1,**TabA1; Tab1=reservaMemoria(); TabA1=reservaMemoria();
 	int **Tab2,**TabA2; Tab2=reservaMemoria(); TabA2=reservaMemoria();
 	char * nick1; nick1=new char[25];
 	char * nick2; nick2=new char[25];
 	init();
+	int rand_bmp = -1;
+	rand_bmp = Tab_Bar_Rand(rand_bmp);
+	nicks(nick1);
+	nicks(nick2);
 	while (op!=0) {
 		switch(menu()){
 			case 1:
 				*score1=0; *score2=0;
-				allegro_message("¡Turno del jugador 1!");
-				nicks(nick1);
+				allegro_message("Turno del jugador 1!");
 				Posiciona(Tab1,nick1);
-				allegro_message("¡Turno del jugador 2!");
-				nicks(nick2);
+				allegro_message("Turno del jugador 2!");
+				Tab_Bar_Rand(rand_bmp);
 				Posiciona(Tab2,nick2);
-				allegro_message("INICIA PARTIDA!");
-				Tab_Bar_Rand();
+				Tab_Bar_Rand(rand_bmp);
+				allegro_message("Se hara un sorteo para determinar que jugador inicia, el resultado es...");
+				if(turno==1)
+					allegro_message("INICIA EL JUGADOR 1 (%s)", nick1);
+				else
+					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
 				while(!key[KEY_ESC] && *score1!=25 && *score2!=25){
-					allegro_message("¡Daños del jugador 1!");
-					while(!key[KEY_O]){
-							for(int i=0;i<10;i++){
-								for(int j=0;j<10;j++){
-									if(*(*(TabA2+i)+j)==6)
-										draw_sprite(tablero, barco_des, i*60+75, j*60+75);
-								}
-							}
-						imprime_barco(Tab1);
-						textprintf(fondo,font,30,30,makecol(255,255,255),"O = ESTA BIEN");
-						blit(tablero,fondo,0,0,45,45,660,660);
-						blit(fondo,screen,0,0,0,0,1200,750);
-					}
-					clear(fondo);
-					draw_sprite(fondo, fondo_tab, 0, 0);
-					blit(fondo,screen,0,0,0,0,1200,750);
-					allegro_message("¡Ataque del jugador 1!");
-					ataque(Tab2,TabA2);
-				}
-			
+					clear_bitmap(tablero);
+					Tab_Bar_Rand(rand_bmp);
+					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno);
+				}			
 				break;
 			case 2:
 				break;
@@ -92,34 +91,47 @@ int main() {
 	}
 
 	deinit();
-	return 0;
 }
-END_OF_MAIN()
 
-void ataque(int **Tab, int **TabA){
-	int *x,*y; x=new int; y=new int;
-	int band=1;
-	cursor=load_bitmap("dis//cursor.bmp",NULL);  //imagen del cursor
-	while(band!=0){
-		imprime_barco(TabA);
+int ataque(int **Tab, int **TabA,int **Tab1, int **Tab2, int jugador){
+	int *x=new int,*y = new int;
+	cursor=load_bitmap("dis/cursor.bmp",NULL);
+	while(1){
+		if(jugador==1)
+			imprime_barco(Tab, Tab1);
+		else
+			imprime_barco(TabA, Tab2);
 		blit(tablero,fondo,0,0,45,45,660,660);
-		if((mouse_x>75 && mouse_y>75) && (mouse_x<675 && mouse_y<675)){
-			masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);                  //imprime el cursor, respetando su transparencia en fondo
-			if(mouse_b & 1) {
-				*x=(mouse_x-75)/60;
-				*y=(mouse_y-75)/60;
-				if(*(*(Tab + *x)+*y)>1 && *(*(Tab +*x)+*y)<5){
-					*(*(TabA+*x)+*y)=6;
-					*(*(Tab+*x)+*y)=8;
-					allegro_message("¡ACERTASTE TIRA DE NUEVO!");
-				}else{
-					*(*(TabA+*x)+*y)=7;
-					allegro_message("¡TIRO AL AGUA!");
-					band=0;
+		show_mouse(fondo);
+		blit(fondo,screen,0,0,0,0,1200,750);
+		if(mouse_b&1){
+			for(int i=0; i<25000; i++)
+				printf('\0');
+			*x= (mouse_x-75)/60, *y=(mouse_y-75)/60;
+			if((*x>=0 && *x<10) && (*y>=0 && *y<10)){
+				if(jugador==1){
+					if((*(*(TabA+*y)+*x)>1 && *(*(TabA+*y)+*x)<6) && (*(*(Tab2+*y)+*x)!=10 && *(*(Tab2+*y)+*x)!=9)){
+						allegro_message("Jugador 1 tira de nuevo.");
+						*(*(Tab2+*y)+*x) = 10;
+						return jugador;
+					} else {
+						allegro_message("AGUA. Turno del jugador 2.");
+						*(*(Tab2+*y)+*x) = 9;
+						return jugador+1;
+					}
+				} else {
+					if((*(*(Tab+*y)+*x)>1 && *(*(Tab+*y)+*x)<6) && (*(*(Tab1+*y)+*x)!=10 && *(*(Tab1+*y)+*x)!=9)){
+						allegro_message("Jugador 2 tira de nuevo.");
+						*(*(Tab1+*y)+*x) = 10;
+						return jugador;
+					} else {
+						allegro_message("AGUA. Turno del jugador 1.");
+						*(*(Tab1+*y)+*x) = 9;
+						return jugador-1;
+					}
 				}
 			}
 		}
-		blit(fondo,screen,0,0,0,0,1200,750);
 	}
 }
 
@@ -141,22 +153,17 @@ void nicks(char * nickname){
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand2){
-			strcat(nickname," ");
 			strcat(nickname, aux2);
 		}
 		i++;
 	}
 	fclose(archivo);
-	for(int i=0;*(nickname +i)!='\0';i++){
-		if(*(nickname +i)>96 && *(nickname +i)<123){
-			*(nickname +i)-=32;
-		}
-	}
 }
 
-void Tab_Bar_Rand(){
-	srand(time(NULL));
-	switch(rand()%4){
+int Tab_Bar_Rand(int rand_bmp){
+	if(rand_bmp<0)
+		rand_bmp=rand()%4;
+	switch(rand_bmp){
 		case 0:
 			tablero=load_bitmap("dis\\tableros\\fondo-0.bmp",NULL);
 			barco2c=load_bitmap("dis\\barcos\\barco2c-0.bmp",NULL);
@@ -202,9 +209,10 @@ void Tab_Bar_Rand(){
 			barco5cv=load_bitmap("dis\\barcos\\barco5cv-3.bmp",NULL);
 			break;
 	}
+	return rand_bmp;
 }
 
-void imprime_barco(int **Tab){
+void imprime_barco(int **Tab, int **Tab_danio){
 	int band=0,x,y;
 	for(int a=2;a<6;a++){
 		for(int i=0;i<10;i++){
@@ -280,7 +288,6 @@ int Posiciona(int **Tab,char *nick){
 	fondo = create_bitmap(SCREEN_W, SCREEN_H);
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
 	selection = load_wav("sonidos\\seleccion.wav");
-	Tab_Bar_Rand();
 	int *b5c_rest=new int,*b4c_rest=new int,*b3c_rest=new int,*b2c_rest=new int,*N_barcos=new int,a;
 	*b5c_rest=1; *b4c_rest=2; *b3c_rest=2; *b2c_rest=3; *N_barcos=8; 
 	while(*N_barcos!=0 && !key[KEY_ESC]){
@@ -326,22 +333,7 @@ int Posiciona(int **Tab,char *nick){
 			mover(a, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos);
 		}
 		if(key[KEY_A]){                                                        //ayuda 
-			draw_sprite(fondo, fondo_tab, 0, 0);
-			FILE * ayuda_barco;
-			ayuda_barco=fopen("utilidades\\Como posicionar barcos.txt","r");
-			char *aux0, *aux1; aux0=new char[120]; aux1=new char[120];
-			int x=100,y=100;
-			while(!key[KEY_B]){
-				fscanf(ayuda_barco, "%s", aux0);
-				while(!feof(ayuda_barco)){
-					copy(aux0,aux1);
-			 		textprintf(fondo,font,x,y,makecol(255,255,255),"%s",aux1);
-					fscanf(ayuda_barco, "%s ", aux0);
-					y+=45;
-				}
-			blit(fondo,screen,0,0,0,0,1200,750);
-			}
-			fclose(ayuda_barco);
+			allegro_message("poner aiuda :v");
 		}
 	}
 	clear_bitmap(fondo);
@@ -350,15 +342,6 @@ int Posiciona(int **Tab,char *nick){
 	blit(fondo,screen,0,0,0,0,1200,750);
 }
 
-void copy(char *aux,char *aux0){
-	for(int i=0;i<120;i++) *(aux0 + i)=0;
-	for(int i=0;*(aux +i)!='\0';i++){
-		if(*(aux + i)==95) *(aux0 +i)=32;
-	  	else if(*(aux +i)>96 && *(aux +i)<123) *(aux0 +i)=*(aux +i)-32;
-		else *(aux0 +i)=*(aux +i);
-	}
-	
-}
 
 void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num){
 	int x=75,y=75, vertical=-1, lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45;
@@ -417,7 +400,7 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 				for(int i=y_tab, j=0; j<a/60; i++, j++)
 					tab[i][x_tab]=a/60;
 			} else {
-				allegro_message("¡No puedes ponerlo aquí!");
+				allegro_message("?No puedes ponerlo aqu?");
 				(*rest)++; (*num)++;
 			}
 		} else {
@@ -428,7 +411,7 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 				for(int i=x_tab, j=0; j<a/60; i++, j++)
 					tab[y_tab][i]=a/60;
 			} else {
-				allegro_message("¡No puedes ponerlo aquí!");
+				allegro_message("?No puedes ponerlo aqu?");
 				(*rest)++; (*num)++;
 			}
 		}
@@ -439,7 +422,7 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 		}
 		printf("\n");
 	}
-	imprime_barco(tab);
+	imprime_barco(tab, 0);
 }
 
 int ** reservaMemoria(){
