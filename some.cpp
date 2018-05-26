@@ -35,20 +35,28 @@ void imprime_barco(int **Tab);
 int Tab_Bar_Rand(int);
 void nicks(char *);
 void copy(char *,char *);
-int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador,char * nick1,char* nick2,int*score1,int*score2);
+int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador,char * nick1,char* nick2,int*score1,int*score2,int **tiempo,int player);
 void operar_juego();
+void cronometro(int **tiempo,int);
+void imprim_tiemp(int **tiempo,int player);
 
 int main() {
 	operar_juego();
 	return 0;
 }
-
 END_OF_MAIN()
 
 void operar_juego(){
 	srand(time(NULL));
-	int op=1, turno=(rand()%2)+1;
+	int op=1, turno=(rand()%2)+1,player=0;
 	int *score1,*score2; score1=new int; score2=new int;
+	int **tiempo; tiempo=new int* [6]; 
+	for(int i=0;i<6;i++) *(tiempo+i)=new int[3];
+	for(int i=0;i<6;i++){
+		for(int j=0;j<3;j++){
+			*(*(tiempo+i)+j)==0;
+		}
+	}
 	int **Tab1,**TabA1; Tab1=reservaMemoria(); TabA1=reservaMemoria();
 	int **Tab2,**TabA2; Tab2=reservaMemoria(); TabA2=reservaMemoria();
 	char * nick1; nick1=new char[25];
@@ -57,11 +65,14 @@ void operar_juego(){
 	int rand_bmp = -1;
 	rand_bmp = Tab_Bar_Rand(rand_bmp);
 	nicks(nick1);
-	readkey();
+	rest(500);
 	nicks(nick2);
 	while (op!=0) {
 		switch(menu()){
 			case 1:
+				if(player==0) player=0;
+				else if(player==5) player=6;
+				else player++;
 				*score1=0; *score2=0;
 				fondo = load_bitmap("dis\\pantalla.bmp",NULL);
 				draw_sprite(screen,fondo,0,0);
@@ -79,7 +90,7 @@ void operar_juego(){
 				while(!key[KEY_ESC] && *score1!=2 && *score2!=2){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
-					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2);
+					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,player);
 				}
 				if(turno==1){
 					clear(screen);
@@ -87,7 +98,8 @@ void operar_juego(){
 				}else{
 					clear(screen);
 					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
-				}	
+				}
+				player++;	
 				break;
 			case 2:
 				break;
@@ -105,7 +117,36 @@ void operar_juego(){
 	deinit();
 }
 
-int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2){
+void imprim_tiemp(int **tiempo,int player){
+	if(*(*(tiempo+player)+0)<10) {                            //player es el numero del jugador para saber de que parte de la matriz tomar los datos
+		if(*(*(tiempo+player)+1)<10) {                        //textprintf imprime textos en pantalla 
+			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo 0%i:0%i:%i0 ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
+		} else {
+			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo 00%i:%i:%i0  ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
+		}
+	} else {
+		if(*(*(tiempo+player)+1)<10) {
+			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo %i:0%i:%i0  ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
+		} else {
+			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo %i:%i:%i0   ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
+		}
+	}
+}
+
+void cronometro(int **tiempo,int player){    //en la opcion 1 jugador, genera el cronometro
+	if(*(*(tiempo+player)+2)>=9) {                   //si milisegundos =9 segundos aumenta y milisegundos =0
+		(*(*(tiempo+player)+1))++;
+		*(*(tiempo+player)+2)=0;
+		if(*(*(tiempo+player)+1)>=60) {             //si segundos mayor o igual a 60 minutos aumenta y segundos =0
+			(*(*(tiempo+player)+0))++;
+			*(*(tiempo+player)+1)=0;
+		}
+	}
+	//rest(100);                                 //espera 100 milisegundos, es por eso que arriba cuando es igual a 9 cambia, porque en 10 seria 10*100 mil milisegundos=1segundo
+	(*(*(tiempo+player)+2))++;                       //aumenta en 1 los milisegundos
+}
+
+int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int **tiempo,int player){
 	int *x=new int,*y = new int;
 	cursor=load_bitmap("dis/cursor.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
@@ -124,6 +165,9 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		textprintf(status,font,100,300,makecol(255,255,255)," %i",*score1);
 		textprintf(status,font,100,350,makecol(255,255,255),"JUGADOR 2 %s",nick2);
 		textprintf(status,font,100,400,makecol(255,255,255)," %i",*score2);
+		cronometro(tiempo,player);
+		imprim_tiemp(tiempo,player);
+		
 		blit(status,fondo,0,0,700,0,500,750);
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_M]){
