@@ -22,6 +22,8 @@ BITMAP *menu3;
 BITMAP *menu4;
 SAMPLE *selection;
 BITMAP *barco_des;
+BITMAP *status;
+BITMAP *disp_agua;
 
 void init();
 void deinit();
@@ -29,11 +31,11 @@ int menu();
 int ** reservaMemoria();
 int Posiciona(int **Tab,char *nick);
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
-void imprime_barco(int **Tab, int **Tab_danio);
+void imprime_barco(int **Tab);
 int Tab_Bar_Rand(int);
 void nicks(char *);
 void copy(char *,char *);
-int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador);
+int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador,char * nick1,char* nick2,int*score1,int*score2);
 void operar_juego();
 
 int main() {
@@ -55,11 +57,14 @@ void operar_juego(){
 	int rand_bmp = -1;
 	rand_bmp = Tab_Bar_Rand(rand_bmp);
 	nicks(nick1);
+	readkey();
 	nicks(nick2);
 	while (op!=0) {
 		switch(menu()){
 			case 1:
 				*score1=0; *score2=0;
+				fondo = load_bitmap("dis\\pantalla.bmp",NULL);
+				draw_sprite(screen,fondo,0,0);
 				allegro_message("Turno del jugador 1!");
 				Posiciona(Tab1,nick1);
 				allegro_message("Turno del jugador 2!");
@@ -71,11 +76,18 @@ void operar_juego(){
 					allegro_message("INICIA EL JUGADOR 1 (%s)", nick1);
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
-				while(!key[KEY_ESC] && *score1!=25 && *score2!=25){
+				while(!key[KEY_ESC] && *score1!=2 && *score2!=2){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
-					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno);
-				}			
+					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2);
+				}
+				if(turno==1){
+					clear(screen);
+					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
+				}else{
+					clear(screen);
+					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
+				}	
 				break;
 			case 2:
 				break;
@@ -93,44 +105,69 @@ void operar_juego(){
 	deinit();
 }
 
-int ataque(int **Tab, int **TabA,int **Tab1, int **Tab2, int jugador){
+int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2){
 	int *x=new int,*y = new int;
 	cursor=load_bitmap("dis/cursor.bmp",NULL);
+	status=load_bitmap("dis/status.bmp",NULL);
 	while(1){
-		if(jugador==1)
-			imprime_barco(Tab, Tab2);
-		else
-			imprime_barco(TabA, Tab1);
+		if(jugador==1){
+			imprime_barco(Tab1);
+			imprime_barco(TabA2);	
+		}else{
+			imprime_barco(Tab2);
+			imprime_barco(TabA1);
+		}	
 		blit(tablero,fondo,0,0,45,45,660,660);
 		show_mouse(fondo);
+		textprintf(fondo,font,50,25,makecol(255,255,255),"G = GUARDAR");
+		textprintf(status,font,100,250,makecol(255,255,255),"JUGADOR 1 %s",nick1);
+		textprintf(status,font,100,300,makecol(255,255,255)," %i",*score1);
+		textprintf(status,font,100,350,makecol(255,255,255),"JUGADOR 2 %s",nick2);
+		textprintf(status,font,100,400,makecol(255,255,255)," %i",*score2);
+		blit(status,fondo,0,0,700,0,500,750);
 		blit(fondo,screen,0,0,0,0,1200,750);
-		if(mouse_b&1){
+		if(key[KEY_M]){
 			for(int i=0; i<25000; i++)
 				printf('\0');
 			*x= (mouse_x-75)/60, *y=(mouse_y-75)/60;
 			if((*x>=0 && *x<10) && (*y>=0 && *y<10)){
 				if(jugador==1){
-					if((*(*(TabA+*y)+*x)>1 && *(*(TabA+*y)+*x)<6) && (*(*(Tab2+*y)+*x)!=10 && *(*(Tab2+*y)+*x)!=9)){
+					if((*(*(Tab2+*y)+*x)>1 && *(*(Tab2+*y)+*x)<6) && (*(*(TabA2+*y)+*x)!=10 && *(*(TabA2+*y)+*x)!=9)){
 						allegro_message("Jugador 1 tira de nuevo.");
-						*(*(Tab2+*y)+*x) = 10;
+						(*score1)++;
+						*(*(TabA2+*y)+*x) = 10;
 						return jugador;
 					} else {
-						allegro_message("AGUA. Turno del jugador 2.");
-						*(*(Tab2+*y)+*x) = 9;
+						if((*(*(TabA2+*y)+*x)==10 || *(*(TabA2+*y)+*x)==9)){
+							allegro_message("Ya has atacado en esa casilla.");
+							return jugador;
+						}else{
+							allegro_message("AGUA. Turno del jugador 2.");
+							*(*(TabA2+*y)+*x) = 9;
+						}
 						return jugador+1;
 					}
 				} else {
-					if((*(*(Tab+*y)+*x)>1 && *(*(Tab+*y)+*x)<6) && (*(*(Tab1+*y)+*x)!=10 && *(*(Tab1+*y)+*x)!=9)){
+					if((*(*(Tab1+*y)+*x)>1 && *(*(Tab1+*y)+*x)<6) && (*(*(TabA1+*y)+*x)!=10 && *(*(TabA1+*y)+*x)!=9)){
 						allegro_message("Jugador 2 tira de nuevo.");
-						*(*(Tab1+*y)+*x) = 10;
+						(*score2)++;
+						*(*(TabA1+*y)+*x) = 10;
 						return jugador;
 					} else {
-						allegro_message("AGUA. Turno del jugador 1.");
-						*(*(Tab1+*y)+*x) = 9;
+						if((*(*(TabA1+*y)+*x)==10 || *(*(TabA1+*y)+*x)==9)){
+							allegro_message("Ya has atacado en esa casilla.");
+							return jugador;
+						}else{
+							allegro_message("AGUA. Turno del jugador 1.");
+							*(*(TabA1+*y)+*x) = 9;	
+						}
 						return jugador-1;
 					}
 				}
 			}
+		}
+		if(key[KEY_G]){
+			
 		}
 	}
 }
@@ -212,7 +249,9 @@ int Tab_Bar_Rand(int rand_bmp){
 	return rand_bmp;
 }
 
-void imprime_barco(int **Tab, int **Tab_danio){
+void imprime_barco(int **Tab){
+	barco_des=load_bitmap("dis/barco_des.bmp",NULL);
+	disp_agua=load_bitmap("dis/disp_agua.bmp",NULL);
 	int band=0,x,y;
 	for(int a=2;a<6;a++){
 		for(int i=0;i<10;i++){
@@ -279,6 +318,17 @@ void imprime_barco(int **Tab, int **Tab_danio){
 					}
 					band=0;
 				}
+			}
+		}
+	}
+	for(int i=0;i<10;i++){
+		for(int j=0;j<10;j++){
+			x=((i-1)*60)+90; y=((j)*60)+30;
+			if(*(*(Tab+j)+i)==10){
+				blit(barco_des,tablero,0,0,x,y,60,60);
+			}
+			if(*(*(Tab+j)+i)==9){
+				draw_sprite(tablero,disp_agua,x,y);
 			}
 		}
 	}
@@ -422,7 +472,7 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 		}
 		printf("\n");
 	}
-	imprime_barco(tab, 0);
+	imprime_barco(tab);
 }
 
 int ** reservaMemoria(){
