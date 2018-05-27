@@ -26,6 +26,8 @@ SAMPLE *main_theme;
 BITMAP *barco_des;
 BITMAP *status;
 BITMAP *disp_agua;
+BITMAP *ayuda_pos;
+BITMAP *ayuda_ata;
 
 void init();
 void deinit();
@@ -105,6 +107,8 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 	int *x=new int,*y = new int;
 	cursor=load_bitmap("dis/cursor.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
+	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
+	ayuda_ata = load_bitmap("dis\\ayuda\\ataque.bmp",NULL);
 	int blanco = makecol(255, 255, 255);
 	tiempo[1] += time(0) - tiempo[0];
 	tiempo[0] = time(0);
@@ -123,18 +127,20 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		}else{
 			imprime_barco(Tab2);
 			imprime_barco(TabA1);
-		}	
-		blit(tablero,fondo,0,0,45,45,660,660);
+		}
+		draw_sprite(fondo,fondo_tab,0,0);
+		draw_sprite(fondo,tablero,45,45);
 		show_mouse(fondo);
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
+		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
 		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
 		textprintf(status,font,100,300,blanco," %i",*score1);
 		textprintf(status,font,100,350,blanco,"JUGADOR 2 %s",nick2);
 		textprintf(status,font,100,400,blanco," %i",*score2);
 		textprintf(status,font,100,450,blanco,"Tiempo transcurrido:");
 		textprintf(status, font, 100, 480, blanco, "%02d:%02d:%02d", tiempo[3], tiempo[2], tiempo[1]);
-		blit(status,fondo,0,0,700,0,500,750);
-		blit(fondo,screen,0,0,0,0,1200,750);
+		draw_sprite(fondo,status,700,0);
+		draw_sprite(screen,fondo,0,0);
 		if(key[KEY_M]){
 			for(int i=0; i<25000; i++)
 				printf('\0');
@@ -177,6 +183,12 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		}
 		if(key[KEY_G]){
 			
+		}
+		if(key[KEY_A]){
+			while(!key[KEY_ESC]){
+				draw_sprite(fondo,ayuda_ata,0,0);
+				draw_sprite(screen,fondo,0,0);
+			}
 		}
 	}
 }
@@ -267,7 +279,7 @@ void imprime_barco(int **Tab){
 				if(*(*(Tab+j)+i)==a){
 					band++;
 					if(band==5 && a==5){
-						blit(barco5cv,tablero,0,0,x,y,60,300);
+						draw_sprite(tablero,barco5cv,x,y);
 						band=0;
 					}
 					if(band==1){
@@ -279,16 +291,16 @@ void imprime_barco(int **Tab){
 						case 1:
 							break;
 						case 2:
-							blit(barco2cv,tablero,0,0,x,y,60,120);
+							draw_sprite(tablero,barco2cv,x,y);
 							break;
 						case 3:
-							blit(barco3cv,tablero,0,0,x,y,60,180);
+							draw_sprite(tablero,barco3cv,x,y);
 							break;
 						case 4:
-							blit(barco4cv,tablero,0,0,x,y,60,240);
+							draw_sprite(tablero,barco4cv,x,y);
 							break;
 						case 5:
-							blit(barco5cv,tablero,0,0,x,y,60,300);
+							draw_sprite(tablero,barco5cv,x,y);
 							break;
 					}
 					band=0;
@@ -300,7 +312,7 @@ void imprime_barco(int **Tab){
 				if(*(*(Tab+i)+j)==a){
 					band++;
 					if(band==5 && a==5){
-						blit(barco5c,tablero,0,0,y,x,300,60);
+						draw_sprite(tablero,barco5c,y,x);
 						band=0;
 					}
 					if(band==1){
@@ -312,16 +324,16 @@ void imprime_barco(int **Tab){
 						case 1:
 							break;
 						case 2:
-							blit(barco2c,tablero,0,0,y,x,120,60);
+							draw_sprite(tablero,barco2c,y,x);
 							break;
 						case 3:
-							blit(barco3c,tablero,0,0,y,x,180,60);
+							draw_sprite(tablero,barco3c,y,x);
 							break;
 						case 4:
-							blit(barco4c,tablero,0,0,y,x,240,60);
+							draw_sprite(tablero,barco4c,y,x);
 							break;
 						case 5:
-							blit(barco5c,tablero,0,0,y,x,300,60);
+							draw_sprite(tablero,barco5c,y,x);
 							break;
 					}
 					band=0;
@@ -333,7 +345,7 @@ void imprime_barco(int **Tab){
 		for(int j=0;j<10;j++){
 			x=((i-1)*60)+90; y=((j)*60)+30;
 			if(*(*(Tab+j)+i)==10){
-				blit(barco_des,tablero,0,0,x,y,60,60);
+				draw_sprite(tablero,barco_des,x,y);
 			}
 			if(*(*(Tab+j)+i)==9){
 				draw_sprite(tablero,disp_agua,x,y);
@@ -347,17 +359,18 @@ int Posiciona(int **Tab,char *nick){
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
 	selection = load_wav("sonidos\\seleccion.wav");
 	posicion = load_wav("sonidos\\posicion.wav");
+	ayuda_pos = load_bitmap("dis\\ayuda\\posicionar.bmp",NULL);
 	int blanco = makecol(255, 255, 255);
 	int *b5c_rest=new int,*b4c_rest=new int,*b3c_rest=new int,*b2c_rest=new int,*N_barcos=new int,a;
 	*b5c_rest=1; *b4c_rest=2; *b3c_rest=2; *b2c_rest=3; *N_barcos=8; 
 	while(*N_barcos!=0 && !key[KEY_ESC]){
 		clear_bitmap(fondo);
 		draw_sprite(fondo, fondo_tab, 0, 0);
-		blit(tablero,fondo,0,0,45,45,660,660);
-		blit(barco2c,fondo,0,0,800,600,120,60);
-		blit(barco3c,fondo,0,0,800,440,180,60);
-		blit(barco4c,fondo,0,0,800,280,240,60);
-		blit(barco5c,fondo,0,0,800,120,300,60);
+		draw_sprite(fondo,tablero,45,45);
+		draw_sprite(fondo,barco2c,800,600);
+		draw_sprite(fondo,barco3c,800,440);
+		draw_sprite(fondo,barco4c,800,280);
+		draw_sprite(fondo,barco5c,800,120);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
 		textprintf(fondo,font,800,50,blanco,"NOMBRE JUGADOR %s",nick);
 		textprintf(fondo,font,800,100,blanco,"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
@@ -371,7 +384,7 @@ int Posiciona(int **Tab,char *nick){
 		textprintf(fondo,font,45,20,blanco,"C = CANCELAR");
 		textprintf(fondo,font,200,20,blanco,"R = ROTAR BARCO");
 		textprintf(fondo,font,400,20,blanco,"A = AYUDA");
-		blit(fondo,screen,0,0,0,0,1200,750);
+		draw_sprite(screen,fondo,0,0);
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
 			a=2; a*=60;
@@ -393,13 +406,16 @@ int Posiciona(int **Tab,char *nick){
 			mover(a, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos);
 		}
 		if(key[KEY_A]){                                                        //ayuda 
-			allegro_message("poner aiuda :v");
+			while(!key[KEY_ESC]){
+				draw_sprite(fondo,ayuda_pos,0,0);
+				draw_sprite(screen,fondo,0,0);
+			}
 		}
 	}
 	clear_bitmap(fondo);
 	clear_bitmap(tablero);
-	draw_sprite(fondo, fondo_tab, 0, 0);
-	blit(fondo,screen,0,0,0,0,1200,750);
+	draw_sprite(fondo,fondo_tab,0,0);
+	draw_sprite(screen,fondo,0,0);
 }
 
 
@@ -433,12 +449,12 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 				lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45;
 			}
 		}
-		blit(tablero,fondo,0,0,45,45,660,660);
+		draw_sprite(fondo,tablero,45,45);
 		if(vertical<0)
-			blit(barco,fondo,0,0,x,y,a,60);
+			draw_sprite(fondo,barco,x,y);
 		else
-			blit(barcov,fondo,0,0,x,y,60,a);
-		blit(fondo,screen,0,0,0,0,1200,750);
+			draw_sprite(fondo,barcov,x,y);
+		draw_sprite(screen,fondo,0,0);
 	}
 	if(key[KEY_C]) {
 		(*rest)++; (*num)++;
@@ -498,20 +514,20 @@ int menu(){
 	play_sample(main_theme, 255, 0, 1000, 0);
 	do {
 		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {         
-			blit(menu1,fondo,0,0,0,0,1200,750);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
+			draw_sprite(fondo,menu1,0,0);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
 			if(mouse_b & 1) opcion=1;                                         //si hace clic izquierdo opcion=1
 		} else if(mouse_x>390 && mouse_x<810 && mouse_y>440 && mouse_y<475) { 
-			blit(menu2,fondo,0,0,0,0,1200,750);
+			draw_sprite(fondo,menu2,0,0);
 			if(mouse_b & 1) opcion=2;
 		} else if(mouse_x>495 && mouse_x<700 && mouse_y>515 && mouse_y<550) {
-			blit(menu3,fondo,0,0,0,0,1200,750);
+			draw_sprite(fondo,menu3,0,0);
 			if(mouse_b & 1) opcion=3;
 		} else if(mouse_x>525 && mouse_x<665 && mouse_y>590 && mouse_y<620) {
-			blit(menu4,fondo,0,0,0,0,1200,750);
+			draw_sprite(fondo,menu4,0,0);
 			if(mouse_b & 1) opcion=4;
-		} else 	blit(menu0,fondo,0,0,0,0,1200,750);
+		} else 	draw_sprite(fondo,menu0,0,0);
 		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);                  //imprime el cursor, respetando su transparencia en fondo
-		blit(fondo,screen,0,0,0,0,1200,750);                                 //imprime el fondo en pantalla
+		draw_sprite(screen,fondo,0,0);                                 //imprime el fondo en pantalla
 	} while(opcion==0);
 	delete fondo;
 	delete cursor;
