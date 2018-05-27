@@ -21,6 +21,8 @@ BITMAP *menu2;
 BITMAP *menu3;
 BITMAP *menu4;
 SAMPLE *selection;
+SAMPLE *posicion;
+SAMPLE *main_theme;
 BITMAP *barco_des;
 BITMAP *status;
 BITMAP *disp_agua;
@@ -35,62 +37,47 @@ void imprime_barco(int **Tab);
 int Tab_Bar_Rand(int);
 void nicks(char *);
 void copy(char *,char *);
-int ataque(int **Tab,int **TabA, int **Tab1, int **Tab2, int jugador,char * nick1,char* nick2,int*score1,int*score2,int **tiempo,int player);
+int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo);
 void operar_juego();
-void cronometro(int **tiempo,int);
-void imprim_tiemp(int **tiempo,int player);
 
 int main() {
+	srand(time(NULL));
+	init();
 	operar_juego();
+	deinit();
 	return 0;
 }
 END_OF_MAIN()
 
 void operar_juego(){
-	srand(time(NULL));
-	int op=1, turno=(rand()%2)+1,player=0;
-	int *score1,*score2; score1=new int; score2=new int;
-	int **tiempo; tiempo=new int* [6]; 
-	for(int i=0;i<6;i++) *(tiempo+i)=new int[3];
-	for(int i=0;i<6;i++){
-		for(int j=0;j<3;j++){
-			*(*(tiempo+i)+j)==0;
-		}
-	}
-	int **Tab1,**TabA1; Tab1=reservaMemoria(); TabA1=reservaMemoria();
-	int **Tab2,**TabA2; Tab2=reservaMemoria(); TabA2=reservaMemoria();
-	char * nick1; nick1=new char[25];
-	char * nick2; nick2=new char[25];
-	init();
-	int rand_bmp = -1;
-	rand_bmp = Tab_Bar_Rand(rand_bmp);
+	int op=1, turno=(rand()%2)+1, *score1=new int, *score2=new int, rand_bmp = -1, tiempo[4] = {0,0,0,0};
+	int **Tab1=reservaMemoria(), **TabA1=reservaMemoria(), **Tab2=reservaMemoria(), **TabA2=reservaMemoria();
+	char *nick1 = new char[25], *nick2=new char[25];
 	nicks(nick1);
-	rest(500);
 	nicks(nick2);
+	rand_bmp = Tab_Bar_Rand(rand_bmp);
 	while (op!=0) {
 		switch(menu()){
 			case 1:
-				if(player==0) player=0;
-				else if(player==5) player=6;
-				else player++;
 				*score1=0; *score2=0;
-				fondo = load_bitmap("dis\\pantalla.bmp",NULL);
-				draw_sprite(screen,fondo,0,0);
 				allegro_message("Turno del jugador 1!");
 				Posiciona(Tab1,nick1);
+				rest(500);
 				allegro_message("Turno del jugador 2!");
 				Tab_Bar_Rand(rand_bmp);
 				Posiciona(Tab2,nick2);
 				Tab_Bar_Rand(rand_bmp);
+				rest(500);
 				allegro_message("Se hara un sorteo para determinar que jugador inicia, el resultado es...");
 				if(turno==1)
 					allegro_message("INICIA EL JUGADOR 1 (%s)", nick1);
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
+				tiempo[0] = time(0);
 				while(!key[KEY_ESC] && *score1!=2 && *score2!=2){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
-					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,player);
+					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo);
 				}
 				if(turno==1){
 					clear(screen);
@@ -99,7 +86,6 @@ void operar_juego(){
 					clear(screen);
 					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
 				}
-				player++;	
 				break;
 			case 2:
 				break;
@@ -113,43 +99,23 @@ void operar_juego(){
 				break;
 		}
 	}
-
-	deinit();
 }
 
-void imprim_tiemp(int **tiempo,int player){
-	if(*(*(tiempo+player)+0)<10) {                            //player es el numero del jugador para saber de que parte de la matriz tomar los datos
-		if(*(*(tiempo+player)+1)<10) {                        //textprintf imprime textos en pantalla 
-			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo 0%i:0%i:%i0 ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
-		} else {
-			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo 00%i:%i:%i0  ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
-		}
-	} else {
-		if(*(*(tiempo+player)+1)<10) {
-			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo %i:0%i:%i0  ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
-		} else {
-			textprintf(status,font,100,450,makecol(255,255,255)," Tiempo %i:%i:%i0   ",*(*(tiempo+player)+0),*(*(tiempo+player)+1),*(*(tiempo+player)+2));
-		}
-	}
-}
-
-void cronometro(int **tiempo,int player){    //en la opcion 1 jugador, genera el cronometro
-	if(*(*(tiempo+player)+2)>=9) {                   //si milisegundos =9 segundos aumenta y milisegundos =0
-		(*(*(tiempo+player)+1))++;
-		*(*(tiempo+player)+2)=0;
-		if(*(*(tiempo+player)+1)>=60) {             //si segundos mayor o igual a 60 minutos aumenta y segundos =0
-			(*(*(tiempo+player)+0))++;
-			*(*(tiempo+player)+1)=0;
-		}
-	}
-	//rest(100);                                 //espera 100 milisegundos, es por eso que arriba cuando es igual a 9 cambia, porque en 10 seria 10*100 mil milisegundos=1segundo
-	(*(*(tiempo+player)+2))++;                       //aumenta en 1 los milisegundos
-}
-
-int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int **tiempo,int player){
+int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int*tiempo){
 	int *x=new int,*y = new int;
 	cursor=load_bitmap("dis/cursor.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
+	int blanco = makecol(255, 255, 255);
+	tiempo[1] += time(0) - tiempo[0];
+	tiempo[0] = time(0);
+	if(tiempo[1]>=60){
+		tiempo[2]+=tiempo[1]/60;
+		tiempo[1]%=60;
+	}
+	if(tiempo[2]>=60){
+		tiempo[3]+=tiempo[2]/60;
+		tiempo[2]%=60;
+	}
 	while(1){
 		if(jugador==1){
 			imprime_barco(Tab1);
@@ -160,14 +126,13 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		}	
 		blit(tablero,fondo,0,0,45,45,660,660);
 		show_mouse(fondo);
-		textprintf(fondo,font,50,25,makecol(255,255,255),"G = GUARDAR");
-		textprintf(status,font,100,250,makecol(255,255,255),"JUGADOR 1 %s",nick1);
-		textprintf(status,font,100,300,makecol(255,255,255)," %i",*score1);
-		textprintf(status,font,100,350,makecol(255,255,255),"JUGADOR 2 %s",nick2);
-		textprintf(status,font,100,400,makecol(255,255,255)," %i",*score2);
-		cronometro(tiempo,player);
-		imprim_tiemp(tiempo,player);
-		
+		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
+		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
+		textprintf(status,font,100,300,blanco," %i",*score1);
+		textprintf(status,font,100,350,blanco,"JUGADOR 2 %s",nick2);
+		textprintf(status,font,100,400,blanco," %i",*score2);
+		textprintf(status,font,100,450,blanco,"Tiempo transcurrido:");
+		textprintf(status, font, 100, 480, blanco, "%02d:%02d:%02d", tiempo[3], tiempo[2], tiempo[1]);
 		blit(status,fondo,0,0,700,0,500,750);
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_M]){
@@ -217,7 +182,6 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 }
 
 void nicks(char * nickname){
-	srand(time(NULL));
 	FILE *archivo;
 	archivo = fopen("utilidades\\nicks.txt", "r");
 	int rand1 = rand() % 19, rand2 = rand() % 19, i=0;
@@ -382,6 +346,8 @@ int Posiciona(int **Tab,char *nick){
 	fondo = create_bitmap(SCREEN_W, SCREEN_H);
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
 	selection = load_wav("sonidos\\seleccion.wav");
+	posicion = load_wav("sonidos\\posicion.wav");
+	int blanco = makecol(255, 255, 255);
 	int *b5c_rest=new int,*b4c_rest=new int,*b3c_rest=new int,*b2c_rest=new int,*N_barcos=new int,a;
 	*b5c_rest=1; *b4c_rest=2; *b3c_rest=2; *b2c_rest=3; *N_barcos=8; 
 	while(*N_barcos!=0 && !key[KEY_ESC]){
@@ -393,18 +359,18 @@ int Posiciona(int **Tab,char *nick){
 		blit(barco4c,fondo,0,0,800,280,240,60);
 		blit(barco5c,fondo,0,0,800,120,300,60);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
-		textprintf(fondo,font,800,50,makecol(255,255,255),"NOMBRE JUGADOR %s",nick);
-		textprintf(fondo,font,800,100,makecol(255,255,255),"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
-		textprintf(fondo,font,800,260,makecol(255,255,255),"QUEDAN : %i",*b4c_rest);
-		textprintf(fondo,font,800,420,makecol(255,255,255),"QUEDAN : %i",*b3c_rest);
-		textprintf(fondo,font,800,580,makecol(255,255,255),"QUEDAN : %i",*b2c_rest);
-		textprintf(fondo,font,730,150,makecol(255,255,255),"TECLA 5");                //con que tecla selecciona cada barco
-		textprintf(fondo,font,730,310,makecol(255,255,255),"TECLA 4");
-		textprintf(fondo,font,730,470,makecol(255,255,255),"TECLA 3");
-		textprintf(fondo,font,730,630,makecol(255,255,255),"TECLA 2");
-		textprintf(fondo,font,45,20,makecol(255,255,255),"C = CANCELAR");
-		textprintf(fondo,font,200,20,makecol(255,255,255),"R = ROTAR BARCO");
-		textprintf(fondo,font,400,20,makecol(255,255,255),"A = AYUDA");
+		textprintf(fondo,font,800,50,blanco,"NOMBRE JUGADOR %s",nick);
+		textprintf(fondo,font,800,100,blanco,"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
+		textprintf(fondo,font,800,260,blanco,"QUEDAN : %i",*b4c_rest);
+		textprintf(fondo,font,800,420,blanco,"QUEDAN : %i",*b3c_rest);
+		textprintf(fondo,font,800,580,blanco,"QUEDAN : %i",*b2c_rest);
+		textprintf(fondo,font,730,150,blanco,"TECLA 5");                //con que tecla selecciona cada barco
+		textprintf(fondo,font,730,310,blanco,"TECLA 4");
+		textprintf(fondo,font,730,470,blanco,"TECLA 3");
+		textprintf(fondo,font,730,630,blanco,"TECLA 2");
+		textprintf(fondo,font,45,20,blanco,"C = CANCELAR");
+		textprintf(fondo,font,200,20,blanco,"R = ROTAR BARCO");
+		textprintf(fondo,font,400,20,blanco,"A = AYUDA");
 		blit(fondo,screen,0,0,0,0,1200,750);
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
@@ -444,27 +410,20 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 		if(key[KEY_RIGHT]) {
 			x+=60;
 			if(x>lim_der) x-=60;
-			stop_sample(selection);
-			play_sample(selection, 255, 0, 2000, 0);
 		}
 		if(key[KEY_LEFT]) {
 			x-=60;
 			if(x<lim_izq) x+=60;
-			stop_sample(selection);
-			play_sample(selection, 255, 0, 2000, 0);
 		}
 		if(key[KEY_UP]) {
 			y-=60;
-			if(y<lim_sup) y+=60;
-			stop_sample(selection);
-			play_sample(selection, 255, 0, 2000, 0);
 		}		
 		if(key[KEY_DOWN]) {
 			y+=60;
 			if(y>lim_inf) y-=60;
-			stop_sample(selection);
-			play_sample(selection, 255, 0, 2000, 0);
 		}
+		stop_sample(selection);
+		play_sample(selection, 255, 0, 2000, 0);
 		if(key[KEY_R]){
 			vertical*=-1;
 			x=75,y=75;
@@ -491,30 +450,24 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 				if(tab[i][x_tab])
 					band=0;
 			if(band){
+				play_sample(posicion, 255, 0, 2000, 0);
 				for(int i=y_tab, j=0; j<a/60; i++, j++)
-					tab[i][x_tab]=a/60;
-			} else {
-				allegro_message("?No puedes ponerlo aqu?");
-				(*rest)++; (*num)++;
+						tab[i][x_tab]=a/60;
 			}
 		} else {
 			for(int i=x_tab, j=0; j<a/60; i++, j++)
 				if(tab[y_tab][i])
 					band=0;
 			if(band){
+				play_sample(posicion, 255, 0, 2000, 0);
 				for(int i=x_tab, j=0; j<a/60; i++, j++)
 					tab[y_tab][i]=a/60;
-			} else {
-				allegro_message("?No puedes ponerlo aqu?");
-				(*rest)++; (*num)++;
 			}
 		}
-		for(int i=0; i<10; i++){
-			for(int j=0; j<10; j++)
-				printf("[%i]", tab[i][j]);
-			printf("\n");
+		if(not band){
+			allegro_message("No puedes ponerlo aqui!");
+			(*rest)++; (*num)++;
 		}
-		printf("\n");
 	}
 	imprime_barco(tab);
 }
@@ -534,13 +487,15 @@ int ** reservaMemoria(){
 
 int menu(){
 	int opcion=0;                                   //variable de control del menu
-	fondo=create_bitmap(1200,750);           
+	fondo=create_bitmap(1200,750);
+	main_theme=load_wav("sonidos\\menu.wav");
 	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
 	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
 	menu1=load_bitmap("menu/menu-1.bmp",NULL);
 	menu2=load_bitmap("menu/menu-2.bmp",NULL);
 	menu3=load_bitmap("menu/menu-3.bmp",NULL);
 	menu4=load_bitmap("menu/menu-4.bmp",NULL);
+	play_sample(main_theme, 255, 0, 1000, 0);
 	do {
 		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {         
 			blit(menu1,fondo,0,0,0,0,1200,750);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
@@ -565,6 +520,8 @@ int menu(){
 	delete menu2;
 	delete menu3;
 	delete menu4;
+	stop_sample(main_theme);
+	rest(200);
 	clear(screen);                                                           //al salir del menu se limpia la pantalla
 	return opcion;
 }
@@ -580,7 +537,6 @@ void init() {                                                                //c
 		allegro_message(allegro_error);
 		exit(-1);
 	}
-
 	install_keyboard();
 	install_mouse();
 	install_sound(DIGI_AUTODETECT,MIDI_AUTODETECT,NULL);
@@ -590,4 +546,5 @@ void init() {                                                                //c
 void deinit() {
 	clear_keybuf();
 	destroy_sample(selection);
+	destroy_sample(posicion);
 }
