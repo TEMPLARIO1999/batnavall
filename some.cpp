@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//Bitmap para el tablero donde se posicionan los barcos
 BITMAP *tablero;
+//Bitmap para los barcos verticales y horizontales.
 BITMAP *barco2c;
 BITMAP *barco3c;
 BITMAP *barco4c;
@@ -12,35 +14,41 @@ BITMAP *barco2cv;
 BITMAP *barco3cv;
 BITMAP *barco4cv;
 BITMAP *barco5cv;
+//Bitmap para el fondo en color negro (buffer) y fondo en degradado azul.
 BITMAP *fondo;
 BITMAP *fondo_tab;
+//Bitmap para el cursor.
 BITMAP *cursor;
+//Bitmaps para el menú, son 5 identificando la selección de cada uno.
 BITMAP *menu0;
 BITMAP *menu1;
 BITMAP *menu2;
 BITMAP *menu3;
 BITMAP *menu4;
+//Bitmaps representando los tiros.
+BITMAP *barco_des;
+BITMAP *disp_agua;
+//Bitmap representando el status de cada jugador y el tiempo.
+BITMAP *status;
+//Bitmaps donde se expondrá la ayuda.
+BITMAP *ayuda_pos;
+BITMAP *ayuda_ata;
+//Archivos .wav para reproducción de sonido.
 SAMPLE *selection;
 SAMPLE *posicion;
 SAMPLE *main_theme;
-BITMAP *barco_des;
-BITMAP *status;
-BITMAP *disp_agua;
-BITMAP *ayuda_pos;
-BITMAP *ayuda_ata;
 
-void init();
-void deinit();
-int menu();
-int ** reservaMemoria();
-int Posiciona(int **Tab,char *nick);
-void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *);
-void imprime_barco(int **Tab);
-int Tab_Bar_Rand(int);
-void nicks(char *);
-void copy(char *,char *);
-int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo);
-void operar_juego();
+void init(); //Prototipo para la inicialización de Allegro.
+void deinit(); //Prototipo para la funcion que se encarga de finalizar la ejecución de Allegro.
+int menu(); //Prototipo que conmuta al inicio, récords y final del juego.
+int ** reservaMemoria(); //Prototipo que reservará la memoria necesaria para cada matriz principal.
+int Posiciona(int **Tab,char *nick); //Prototipo que se encargará de la posición de cada uno de los barcos en el juego.
+void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *); //Prototipo de la función que moverá los barcos con las teclas.
+void imprime_barco(int **Tab);//Prototipo que imprime los barcos en el tablero.
+int Tab_Bar_Rand(int);//Función que seleccionará aleatoriamente los bitmaps.
+void nicks(char *);//Le dará un nickname a cada uno de los 2 jugadores.
+int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo);//Definirá la validez de los ataques e intercambiará turnos.
+void operar_juego(); //Función que inicializará y finalizará juego.
 
 int main() {
 	srand(time(NULL));
