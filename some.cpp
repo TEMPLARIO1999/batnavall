@@ -113,7 +113,7 @@ void operar_juego(){
 
 int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int*tiempo){
 	int *x=new int,*y = new int;
-	cursor=load_bitmap("dis/cursor.bmp",NULL);
+	cursor=load_bitmap("dis/mira.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
 	ayuda_ata = load_bitmap("dis\\ayuda\\ataque.bmp",NULL);
@@ -138,7 +138,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		}
 		draw_sprite(fondo,fondo_tab,0,0);
 		draw_sprite(fondo,tablero,45,45);
-		show_mouse(fondo);
+		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
 		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
@@ -513,7 +513,7 @@ int menu(){
 	int opcion=0;                                   //variable de control del menu
 	fondo=create_bitmap(1200,750);
 	main_theme=load_wav("sonidos\\menu.wav");
-	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
+	cursor=load_bitmap("dis/ancla.bmp",NULL);  //imagen del cursor
 	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
 	menu1=load_bitmap("menu/menu-1.bmp",NULL);
 	menu2=load_bitmap("menu/menu-2.bmp",NULL);
