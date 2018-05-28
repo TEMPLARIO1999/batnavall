@@ -51,15 +51,22 @@ int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*ni
 void operar_juego(); //Función que inicializará y finalizará juego.
 
 int main() {
-	srand(time(NULL));
-	init();
-	operar_juego();
-	deinit();
-	return 0;
+	srand(time(NULL)); //Necesitamos numeros aleatorios para diseños y nicknames.
+	init(); //Inicializamos allegro.
+	operar_juego(); //Inicializamos el administrador del juego.
+	deinit(); //Desinicializamos allegro.
+	return 0; //Retornamos cero. Finaliza la ejecución.
 }
-END_OF_MAIN()
+END_OF_MAIN() //Funcion de Allegro que marca el fin del main. Sin el el juego no se ejecuta.
 
 void operar_juego(){
+	//VARIABLES PRINCIPALES:
+	//Operación es la variable de control del menu, 1 es para iniciar juego, 2 para cargar juego, 3 para records y 0 para salir.
+	//El turno es una variable que se define aleatoriamente, 1 y 2 para cada jugador respectivamente.
+	//rand_bmp decidirá el diseño para el tablero, hay 4 disponibles.
+	//tiempo es un vector de 4 espacios, uno para el acumulado, los otros 3 para HH:MM:SS.
+	//4 matrices que definirán los tableros de puntuación y ataque, 2 para cada jugador.
+	//Nick1 y Nick 2 le darán a cada jugador un nickname.
 	int op=1, turno=(rand()%2)+1, *score1=new int, *score2=new int, rand_bmp = -1, tiempo[4] = {0,0,0,0};
 	int **Tab1=reservaMemoria(), **TabA1=reservaMemoria(), **Tab2=reservaMemoria(), **TabA2=reservaMemoria();
 	char *nick1 = new char[25], *nick2=new char[25];
@@ -113,7 +120,7 @@ void operar_juego(){
 
 int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int*tiempo){
 	int *x=new int,*y = new int;
-	cursor=load_bitmap("dis/mira.bmp",NULL);
+	cursor=load_bitmap("dis/cursor.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
 	fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
 	ayuda_ata = load_bitmap("dis\\ayuda\\ataque.bmp",NULL);
@@ -138,7 +145,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		}
 		draw_sprite(fondo,fondo_tab,0,0);
 		draw_sprite(fondo,tablero,45,45);
-		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
+		show_mouse(fondo);
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
 		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
@@ -513,7 +520,7 @@ int menu(){
 	int opcion=0;                                   //variable de control del menu
 	fondo=create_bitmap(1200,750);
 	main_theme=load_wav("sonidos\\menu.wav");
-	cursor=load_bitmap("dis/ancla.bmp",NULL);  //imagen del cursor
+	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
 	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
 	menu1=load_bitmap("menu/menu-1.bmp",NULL);
 	menu2=load_bitmap("menu/menu-2.bmp",NULL);
