@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 //Bitmap para el tablero donde se posicionan los barcos
 BITMAP *tablero;
@@ -49,6 +50,21 @@ int Tab_Bar_Rand(int);//Función que seleccionará aleatoriamente los bitmaps.
 void nicks(char *);//Le dará un nickname a cada uno de los 2 jugadores.
 int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo);//Definirá la validez de los ataques e intercambiará turnos.
 void operar_juego(); //Función que inicializará y finalizará juego.
+void Copy_Mat(int **Mat,int Mat1[10][10]);
+void Copy_Mat2(int Mat[10][10],int **Mat1);
+
+struct Tjuego{
+	int Tab1[10][10];
+	int Tab2[10][10];
+	int TabA1[10][10];
+	int TabA2[10][10];
+	int score1;
+	int score2;
+	int turno;
+	int tiempo[4];
+	char nick1[25];
+	char nick2[25];
+};
 
 int main() {
 	srand(time(NULL)); //Necesitamos numeros aleatorios para diseños y nicknames.
@@ -58,6 +74,22 @@ int main() {
 	return 0; //Retornamos cero. Finaliza la ejecución.
 }
 END_OF_MAIN() //Funcion de Allegro que marca el fin del main. Sin el el juego no se ejecuta.
+
+void Copy_Mat2(int Mat[10][10],int **Mat1){
+	for(int i=0;i<10;i++){
+		for(int j=0;j<10;j++){
+			*(*(Mat1+i)+j)=Mat[i][j];
+		}
+	}
+}
+
+void Copy_Mat(int **Mat,int Mat1[10][10]){
+	for(int i=0;i<10;i++){
+		for(int j=0;j<10;j++){
+			Mat1[i][j]=*(*(Mat+i)+j);
+		}
+	}
+}
 
 void operar_juego(){
 	//VARIABLES PRINCIPALES:
@@ -105,6 +137,42 @@ void operar_juego(){
 				}
 				break;
 			case 2:
+				FILE *archivo;
+				if((archivo=fopen("juego.dat","rb"))==NULL){
+					exit(1);
+				}
+				Tjuego juego;
+				fread(&juego,sizeof(Tjuego),1,archivo);
+				Copy_Mat2(juego.Tab1,Tab1);
+				Copy_Mat2(juego.Tab2,Tab2);
+				Copy_Mat2(juego.TabA1,TabA1);
+				Copy_Mat2(juego.TabA2,TabA2);
+				*score1=juego.score1;
+				*score2=juego.score2;
+				turno=juego.turno;
+				tiempo[0]=juego.tiempo[0];
+				tiempo[1]=juego.tiempo[1];
+				tiempo[2]=juego.tiempo[2];
+				tiempo[3]=juego.tiempo[3];
+				strcpy(nick1,juego.nick1);
+				strcpy(nick2,juego.nick2);
+				fclose(archivo);
+				fondo = create_bitmap(SCREEN_W, SCREEN_H);
+				fondo_tab = load_bitmap("dis\\pantalla.bmp",NULL);
+				Tab_Bar_Rand(rand_bmp);
+				tiempo[0] = time(0);
+				while(!key[KEY_ESC] && *score1!=25 && *score2!=25){
+					clear_bitmap(tablero);
+					Tab_Bar_Rand(rand_bmp);
+					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo);
+				}
+				if(turno==1){
+					clear(screen);
+					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
+				}else{
+					clear(screen);
+					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
+				}
 				break;
 			case 3:
 				break;
@@ -146,6 +214,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		draw_sprite(fondo,fondo_tab,0,0);
 		draw_sprite(fondo,tablero,45,45);
 		show_mouse(fondo);
+		text_mode(-1);   
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
 		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
@@ -197,7 +266,27 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			}
 		}
 		if(key[KEY_G]){
-			
+			Tjuego juego;
+			Copy_Mat(Tab1,juego.Tab1);
+			Copy_Mat(Tab2,juego.Tab2);
+			Copy_Mat(TabA1,juego.TabA1);
+			Copy_Mat(TabA2,juego.TabA2);
+			juego.score1=*score1;
+			juego.score2=*score2;
+			juego.turno=jugador;
+			juego.tiempo[0]=tiempo[0];
+			juego.tiempo[1]=tiempo[1];
+			juego.tiempo[2]=tiempo[2];
+			juego.tiempo[3]=tiempo[3];
+			strcpy(juego.nick1,nick1);
+			strcpy(juego.nick2,nick2);
+			FILE *archivo;
+			if((archivo=fopen("juego.dat","ab+"))==NULL){
+				exit(1);
+			}
+			fwrite(&juego,sizeof(Tjuego),1,archivo);
+			fclose(archivo);
+			rest(500);
 		}
 		if(key[KEY_A]){
 			while(!key[KEY_ESC]){
@@ -447,6 +536,7 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 			if(x<lim_izq) x+=60;
 		}
 		if(key[KEY_UP]) {
+			if(y<lim_sup) y+=60;
 			y-=60;
 		}		
 		if(key[KEY_DOWN]) {
