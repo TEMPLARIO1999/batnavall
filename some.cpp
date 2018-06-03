@@ -56,9 +56,17 @@ struct Tjuego{
 };
 
 struct Barco {
-	BITMAP *dibujo_barco;
 	int x;
 	int y;
+	int tipo;
+};
+
+struct Records{
+	int Min;
+	int Seg;
+	int Mil;
+	char nick[25];
+	int jugador;
 };
 
 void init(); //Prototipo para la inicializacion de Allegro.
@@ -66,7 +74,7 @@ void deinit(); //Prototipo para la funcion que se encarga de finalizar la ejecuc
 int menu(); //Prototipo que conmuta al inicio, reords y final del juego.
 int ** reservaMemoria(); //Prototipo que reservara la memoria necesaria para cada matriz principal.
 int Posiciona(int **Tab,char *nick, Barco *barcos); //Prototipo que se encargara de la posicion de cada uno de los barcos en el juego.
-void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *, Barco*); //Prototipo de la funcion que movera los barcos con las teclas.
+void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *, Barco*,int n); //Prototipo de la funcion que movera los barcos con las teclas.
 void imprime_danio(int **tab, int modo);
 void imprime_barco(Barco*);//Prototipo que imprime los barcos en el tablero.
 int Tab_Bar_Rand(int);//Funci? que seleccionar?aleatoriamente los bitmaps.
@@ -117,9 +125,11 @@ void operar_juego(){
 		bar_j2[i].x = -1;
 	}
 	char *nick1 = new char[25], *nick2=new char[25];
+	int i;
 	nicks(nick1);
 	nicks(nick2);
 	rand_bmp = Tab_Bar_Rand(rand_bmp);
+	FILE *archivo;
 	while (op!=0) {
 		switch(menu()){
 			case 1:
@@ -143,20 +153,48 @@ void operar_juego(){
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
 				}
-				if(turno==1){
-					clear(screen);
-					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
+				FILE * archivo;
+				Records rec; int player;
+				if((archivo=fopen("records.dat","wrb"))==NULL){
+					printf("creado");
+					archivo=fopen("records.dat","ab+");
+					player=1;
 				}else{
-					clear(screen);
-					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
+					fread(&rec,sizeof(Records),1,archivo);
+					player=rec.jugador;
+					rec.Min=tiempo[3];
+					rec.Seg=tiempo[2];
+					rec.Mil=tiempo[1];
+					if(turno==1){
+						clear(screen);
+						allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
+						strcpy(rec.nick,nick1);
+						fseek(archivo,(sizeof(Records)*player),SEEK_SET);
+						rec.jugador=player+1;
+						fwrite(&rec,sizeof(Records),1,archivo);
+					}else{
+						clear(screen);
+						allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
+						strcpy(rec.nick,nick2);
+						fseek(archivo,(sizeof(Records)*player),SEEK_SET);
+						rec.jugador=player+1;
+						fwrite(&rec,sizeof(Records),1,archivo);
+					}
 				}
+				fseek(archivo,0,SEEK_SET);
+				fwrite(&rec,sizeof(Records),1,archivo);
+				fclose(archivo);
 				break;
 			case 2:
-				FILE *archivo;
-				if((archivo=fopen("juego.dat","rb"))==NULL){
+				if((archivo=fopen("juego.dat","rwb"))==NULL){
 					exit(1);
 				}
 				Tjuego juego;
+				Tab_Bar_Rand(rand_bmp);
+				for(int i=0;i<8;i++){
+					fread(&bar_j1[i],sizeof(Barco),1,archivo);
+					fread(&bar_j2[i],sizeof(Barco),1,archivo);
+				}
 				fread(&juego,sizeof(Tjuego),1,archivo);
 				Copy_Mat2(juego.Tab1,Tab1);
 				Copy_Mat2(juego.Tab2,Tab2);
@@ -190,6 +228,27 @@ void operar_juego(){
 				}
 				break;
 			case 3:
+				Records recs[8];
+				i=0;
+				if((archivo=fopen("records.dat","rb"))==NULL){
+					exit(1);
+				}else{
+					fread(&recs[i],sizeof(Records),1,archivo);
+					while(i<=recs[0].jugador){
+						i++;
+						fread(&recs[i],sizeof(Records),1,archivo);
+					}
+					fclose(archivo);
+					fondo=load_bitmap("dis/pantalla.bmp",NULL);
+					text_mode(-1);
+					while(!key[KEY_ESC]){
+						for( i=1;i<=recs[0].jugador;i++){
+							textprintf(fondo, font, 100, (i+1)*50, makecol(255,255,255), "%02d:%02d:%02d", recs[i].Min, recs[i].Seg, recs[i].Mil);
+						}
+						draw_sprite(screen,fondo,0,0);	
+					}
+					
+				}
 				break;
 			case 4:
 				op=0;
@@ -203,7 +262,7 @@ void operar_juego(){
 
 int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int*tiempo, int rnd, Barco *j1, Barco *j2){
 	int *x=new int,*y = new int;
-	cursor=load_bitmap("dis/cursor.bmp",NULL);
+	cursor=load_bitmap("dis/mira.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
 	fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
 	ayuda_ata = load_bitmap("dis/ayuda/ataque.bmp",NULL);
@@ -225,7 +284,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			imprime_danio(TabA2, 0);	
 		else
 			imprime_danio(TabA1, 0);
-		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);
+		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
 		text_mode(-1);   
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
@@ -238,7 +297,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		textprintf(status, font, 100, 480, blanco, "%02d:%02d:%02d", tiempo[3], tiempo[2], tiempo[1]);
 		draw_sprite(fondo,status,700,0);
 		draw_sprite(screen,fondo,0,0);
-		if(key[KEY_M]){
+		if(mouse_b &1){
 			for(int i=0; i<25000; i++)
 				printf('\0');
 			*x= (mouse_x-75)/60, *y=(mouse_y-75)/60;
@@ -304,6 +363,10 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			FILE *archivo;
 			if((archivo=fopen("juego.dat","ab+"))==NULL){
 				exit(1);
+			}
+			for(int i=0;i<8;i++){
+				fwrite(&j1[i],sizeof(Barco),1,archivo);
+				fwrite(&j2[i],sizeof(Barco),1,archivo);
 			}
 			fwrite(&juego,sizeof(Tjuego),1,archivo);
 			fclose(archivo);
@@ -442,7 +505,24 @@ void imprime_barco(Barco *barcos){
 	for(int i=0; i<8; i++){
 		if(barcos[i].x<0)
 			break;
-		draw_sprite(tablero, barcos[i].dibujo_barco,  barcos[i].x-45,  barcos[i].y-45);
+		switch(barcos[i].tipo){
+			case 1: 	draw_sprite(tablero,barco2cv, barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 2: 	draw_sprite(tablero,barco2c,  barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 3: 	draw_sprite(tablero,barco3cv, barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 4: 	draw_sprite(tablero,barco3c,  barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 5: 	draw_sprite(tablero,barco4cv, barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 6: 	draw_sprite(tablero,barco4c,  barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 7: 	draw_sprite(tablero,barco5cv, barcos[i].x-45,  barcos[i].y-45);
+				break;
+			case 8: 	draw_sprite(tablero,barco5c,  barcos[i].x-45,  barcos[i].y-45);
+				break;
+		}
 	}
 	draw_sprite(fondo,fondo_tab,0,0);
 	draw_sprite(fondo,tablero,45,45);
@@ -479,21 +559,22 @@ int Posiciona(int **Tab,char *nick, Barco *barcos){
 		textprintf(fondo,font,200,20,blanco,"R = ROTAR BARCO");
 		textprintf(fondo,font,400,20,blanco,"A = AYUDA");
 		draw_sprite(screen,fondo,0,0);
+		int ctrl=(8-(*N_barcos));
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
 			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
-			mover(120, barco2c, barco2cv,fondo, Tab, b2c_rest,N_barcos, barcos);                  //funcion encargada del movimiento
+			mover(120, barco2c, barco2cv,fondo, Tab, b2c_rest,N_barcos, barcos,1);                  //funcion encargada del movimiento
 		}
 		if(key[KEY_3] && *b3c_rest!=0){
 			(*b3c_rest)--; (*N_barcos)--;
-			mover(180, barco3c, barco3cv,fondo, Tab, b3c_rest,N_barcos, barcos);
+			mover(180, barco3c, barco3cv,fondo, Tab, b3c_rest,N_barcos, barcos,3);
 		}
 		if(key[KEY_4] && *b4c_rest!=0){
 			(*b4c_rest)--; (*N_barcos)--;
-			mover(240, barco4c, barco4cv,fondo, Tab, b4c_rest,N_barcos, barcos);
+			mover(240, barco4c, barco4cv,fondo, Tab, b4c_rest,N_barcos, barcos,5);
 		}
 		if(key[KEY_5] && *b5c_rest!=0){
 			(*b5c_rest)--; (*N_barcos)--;
-			mover(300, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos, barcos);
+			mover(300, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos, barcos,7);
 		}
 		if(key[KEY_A]){                                                        //ayuda 
 			while(!key[KEY_ESC]){
@@ -509,7 +590,7 @@ int Posiciona(int **Tab,char *nick, Barco *barcos){
 }
 
 
-void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num, Barco *barcos){
+void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num, Barco *barcos,int n){
 	int x=75,y=75, vertical=-1, lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45, ctrl=(8-(*num)-1);
 	while(!key[KEY_ENTER] && !key[KEY_C]){
 		readkey();
@@ -574,9 +655,9 @@ void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *
 		}
 		if(band){
 			if(vertical>0)
-				barcos[ctrl].dibujo_barco = barcov;
+				barcos[ctrl].tipo=n;
 			else
-				barcos[ctrl].dibujo_barco = barco;
+				barcos[ctrl].tipo=n+1;
 			barcos[ctrl].x = x;
 			barcos[ctrl].y = y;
 		} else {
@@ -604,7 +685,7 @@ int menu(){
 	int opcion=0;                                   //variable de control del menu
 	fondo=create_bitmap(1200,750);
 	main_theme=load_wav("sonidos/menu.wav");
-	cursor=load_bitmap("dis/cursor.bmp",NULL);  //imagen del cursor
+	cursor=load_bitmap("dis/papa.bmp",NULL);  //imagen del cursor
 	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
 	menu1=load_bitmap("menu/menu-1.bmp",NULL);
 	menu2=load_bitmap("menu/menu-2.bmp",NULL);
