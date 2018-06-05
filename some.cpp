@@ -148,7 +148,7 @@ void operar_juego(){
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
 				tiempo[0] = time(0);
-				while(!key[KEY_ESC] && *score1!=2 && *score2!=2){
+				while(*score1!=2 && *score2!=2){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
@@ -214,7 +214,7 @@ void operar_juego(){
 				fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
 				Tab_Bar_Rand(rand_bmp);
 				tiempo[0] = time(0);
-				while(!key[KEY_ESC] && *score1!=25 && *score2!=25){
+				while(*score1!=25 && *score2!=25){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo, rand_bmp, bar_j1, bar_j2);
@@ -379,9 +379,9 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			}
 		}
 		if(key[KEY_S]){
+            clear_bitmap(tablero);
+            Tab_Bar_Rand(rnd);
 			while(!key[KEY_ESC]){
-				clear_bitmap(tablero);
-				Tab_Bar_Rand(rnd);
 				if(jugador==1){
 					imprime_barco(j1);
 					imprime_danio(TabA1, 1);	
@@ -393,9 +393,9 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 				draw_sprite(fondo,status,700,0);
 				draw_sprite(screen,fondo,0,0);
 			}
+			clear_bitmap(tablero);
+			Tab_Bar_Rand(rnd);
 		}
-		clear_bitmap(tablero);
-		Tab_Bar_Rand(rnd);
 	}                   
 }
 
@@ -424,6 +424,10 @@ void nicks(char * nickname){
 }
 
 int Tab_Bar_Rand(int rand_bmp){
+    printf("correcto.\n");
+    barco_des=load_bitmap("dis/barco_des.bmp",NULL);
+    disp_agua=load_bitmap("dis/disp_agua.bmp",NULL);
+    fuego=load_bitmap("dis/fuego.bmp",NULL);
 	if(rand_bmp<0)
 		rand_bmp=rand()%4;
 	switch(rand_bmp){
@@ -477,9 +481,6 @@ int Tab_Bar_Rand(int rand_bmp){
 
 void imprime_danio(int **tab, int modo){
 	int x, y;
-	barco_des=load_bitmap("dis/barco_des.bmp",NULL);
-	disp_agua=load_bitmap("dis/disp_agua.bmp",NULL);
-	fuego=load_bitmap("dis/fuego.bmp",NULL);
 	if(modo){
 		for(int i=0; i<10; i++)
 			for(int j=0; j<10; j++)
