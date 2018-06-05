@@ -61,14 +61,6 @@ struct Barco {
 	int tipo;
 };
 
-struct Records{
-	int Min;
-	int Seg;
-	int Mil;
-	char nick[25];
-	int jugador;
-};
-
 void init(); //Prototipo para la inicializacion de Allegro.
 void deinit(); //Prototipo para la funcion que se encarga de finalizar la ejecucion de Allegro.
 int menu(); //Prototipo que conmuta al inicio, reords y final del juego.
@@ -148,45 +140,21 @@ void operar_juego(){
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
 				tiempo[0] = time(0);
-				while(*score1!=2 && *score2!=2){
+				while(*score1!=25 && *score2!=25){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
 				}
-				FILE * archivo;
-				Records rec; int player;
-				if((archivo=fopen("records.dat","wrb"))==NULL){
-					printf("creado");
-					archivo=fopen("records.dat","ab+");
-					player=1;
+				if(turno==1){
+					clear(screen);
+					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
 				}else{
-					fread(&rec,sizeof(Records),1,archivo);
-					player=rec.jugador;
-					rec.Min=tiempo[3];
-					rec.Seg=tiempo[2];
-					rec.Mil=tiempo[1];
-					if(turno==1){
-						clear(screen);
-						allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
-						strcpy(rec.nick,nick1);
-						fseek(archivo,(sizeof(Records)*player),SEEK_SET);
-						rec.jugador=player+1;
-						fwrite(&rec,sizeof(Records),1,archivo);
-					}else{
-						clear(screen);
-						allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
-						strcpy(rec.nick,nick2);
-						fseek(archivo,(sizeof(Records)*player),SEEK_SET);
-						rec.jugador=player+1;
-						fwrite(&rec,sizeof(Records),1,archivo);
-					}
+					clear(screen);
+					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
 				}
-				fseek(archivo,0,SEEK_SET);
-				fwrite(&rec,sizeof(Records),1,archivo);
-				fclose(archivo);
 				break;
 			case 2:
-				if((archivo=fopen("juego.dat","rwb"))==NULL){
+				if((archivo=fopen("juego.dat","rb+"))==NULL){
 					exit(1);
 				}
 				Tjuego juego;
@@ -228,27 +196,6 @@ void operar_juego(){
 				}
 				break;
 			case 3:
-				Records recs[8];
-				i=0;
-				if((archivo=fopen("records.dat","rb"))==NULL){
-					exit(1);
-				}else{
-					fread(&recs[i],sizeof(Records),1,archivo);
-					while(i<=recs[0].jugador){
-						i++;
-						fread(&recs[i],sizeof(Records),1,archivo);
-					}
-					fclose(archivo);
-					fondo=load_bitmap("dis/pantalla.bmp",NULL);
-					text_mode(-1);
-					while(!key[KEY_ESC]){
-						for( i=1;i<=recs[0].jugador;i++){
-							textprintf(fondo, font, 100, (i+1)*50, makecol(255,255,255), "%02d:%02d:%02d", recs[i].Min, recs[i].Seg, recs[i].Mil);
-						}
-						draw_sprite(screen,fondo,0,0);	
-					}
-					
-				}
 				break;
 			case 4:
 				op=0;
@@ -300,7 +247,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		if(mouse_b &1){
 			for(int i=0; i<25000; i++)
 				printf('\0');
-			*x= (mouse_x-75)/60, *y=(mouse_y-75)/60;
+			*x= (mouse_x-45)/60, *y=(mouse_y-45)/60;
 			if((*x>=0 && *x<10) && (*y>=0 && *y<10)){
 				if(jugador==1){
 					if((*(*(Tab2+*y)+*x)>1 && *(*(Tab2+*y)+*x)<6) && (*(*(TabA2+*y)+*x)!=10 && *(*(TabA2+*y)+*x)!=9)){
@@ -361,7 +308,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			strcpy(juego.nick1,nick1);
 			strcpy(juego.nick2,nick2);
 			FILE *archivo;
-			if((archivo=fopen("juego.dat","ab+"))==NULL){
+			if((archivo=fopen("juego.dat","wb+"))==NULL){
 				exit(1);
 			}
 			for(int i=0;i<8;i++){
