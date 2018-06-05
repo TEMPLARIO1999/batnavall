@@ -73,8 +73,13 @@ int Tab_Bar_Rand(int);//Funci? que seleccionar?aleatoriamente los bitmaps.
 void nicks(char *);//Le dar?un nickname a cada uno de los 2 jugadores.
 int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo, int, Barco*, Barco*);//Definira la validez de los ataques e intercambiar?turnos.
 void operar_juego(); //Funcion que inicializar y finalizar el juego.
-void Copy_Mat(int **Mat,int Mat1[10][10]);
-void Copy_Mat2(int Mat[10][10],int **Mat1);
+void Copy_Mat(int **Mat,int Mat1[10][10]);  //copia la matriz de juego en la matriz de la estructura
+void Copy_Mat2(int Mat[10][10],int **Mat1); //compia la matriz del archivo en la matris de juego
+void guarda(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //guarda el juego
+int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //carga los datos guardados en un archivo
+void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2);
+void limbar(Barco j[8]);
+void limMat(int **mat);
 
 int main() {
 	srand(time(NULL)); //Necesitamos numeros aleatorios para disenios y nicknames.
@@ -84,6 +89,55 @@ int main() {
 	return 0; //Retornamos cero. Finaliza la ejecucion.
 }
 END_OF_MAIN() //Funcion de Allegro que marca el fin del main. Sin el el juego no se ejecuta.
+
+void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2){
+	limMat(Tab1); limMat(Tab2); limMat(TabA1); limMat(TabA2);
+	tiempo[0]=0; tiempo[1]=0; tiempo[2]=0; tiempo[3]=0; tiempo[4]=0;
+	limbar(j1);
+	limbar(j2);
+}
+
+void limMat(int **mat){
+	for(int i=0;i<10;i++){
+		for(int j=0;j<10;j++){
+			*(*(mat+i)+j)=0;
+		}
+	}
+}
+
+void limbar(Barco j[8]){
+	for(int i=0;i<8;i++){
+		j[i].x=-1;
+	}
+}
+
+int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2){
+	FILE *archivo;
+	if((archivo=fopen("juego.dat","rb+"))==NULL){
+		exit(1);
+	}
+	Tjuego juego;
+	for(int i=0;i<8;i++){
+		fread(&j1[i],sizeof(Barco),1,archivo);
+		fread(&j2[i],sizeof(Barco),1,archivo);
+	}
+	fread(&juego,sizeof(Tjuego),1,archivo);
+	Copy_Mat2(juego.Tab1,Tab1);
+	Copy_Mat2(juego.Tab2,Tab2);
+	Copy_Mat2(juego.TabA1,TabA1);
+	Copy_Mat2(juego.TabA2,TabA2);
+	*score1=juego.score1;
+	*score2=juego.score2;
+	int jugador=juego.turno;
+	tiempo[0]=juego.tiempo[0];
+	tiempo[1]=juego.tiempo[1];
+	tiempo[2]=juego.tiempo[2];
+	tiempo[3]=juego.tiempo[3];
+	strcpy(nick1,juego.nick1);
+	strcpy(nick2,juego.nick2);
+	fclose(archivo);
+	return jugador;
+}
 
 void Copy_Mat2(int Mat[10][10],int **Mat1){
 	for(int i=0;i<10;i++){
@@ -109,7 +163,7 @@ void operar_juego(){
 	//tiempo es un vector de 4 espacios, uno para el acumulado, los otros 3 para HH:MM:SS.
 	//4 matrices que definir? los tableros de puntuaci? y ataque, 2 para cada jugador.
 	//Nick1 y Nick 2 le dar? a cada jugador un nickname.
-	int op=1, turno=(rand()%2)+1, *score1=new int, *score2=new int, rand_bmp = -1, tiempo[4] = {0,0,0,0};
+	int op=1, turno, *score1=new int, *score2=new int, rand_bmp = -1, tiempo[4] = {0,0,0,0};
 	int **Tab1=reservaMemoria(), **TabA1=reservaMemoria(), **Tab2=reservaMemoria(), **TabA2=reservaMemoria();
 	Barco bar_j1[8], bar_j2[8];
 	for(int i=0; i<8; i++){
@@ -125,8 +179,10 @@ void operar_juego(){
 	while (op!=0) {
 		switch(menu()){
 			case 1:
+				turno=(rand()%2)+1;
 				*score1=0; *score2=0;
 				allegro_message("Turno del jugador 1!");
+				Tab_Bar_Rand(rand_bmp);
 				Posiciona(Tab1,nick1,bar_j1);
 				rest(500);
 				allegro_message("Turno del jugador 2!");
@@ -140,7 +196,7 @@ void operar_juego(){
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
 				tiempo[0] = time(0);
-				while(*score1!=25 && *score2!=25){
+				while(*score1!=25 && *score2!=25 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
@@ -148,41 +204,22 @@ void operar_juego(){
 				if(turno==1){
 					clear(screen);
 					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
-				}else{
+				}else if(turno==0){
 					clear(screen);
 					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
 				}
+				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
+				clear_bitmap(tablero);
 				break;
 			case 2:
-				if((archivo=fopen("juego.dat","rb+"))==NULL){
-					exit(1);
-				}
-				Tjuego juego;
+				turno=carga(Tab1,Tab2,TabA1,TabA2,nick1,nick2,score1,score2,tiempo,bar_j1,bar_j2); 
+				turno=(rand()%2)+1;
 				Tab_Bar_Rand(rand_bmp);
-				for(int i=0;i<8;i++){
-					fread(&bar_j1[i],sizeof(Barco),1,archivo);
-					fread(&bar_j2[i],sizeof(Barco),1,archivo);
-				}
-				fread(&juego,sizeof(Tjuego),1,archivo);
-				Copy_Mat2(juego.Tab1,Tab1);
-				Copy_Mat2(juego.Tab2,Tab2);
-				Copy_Mat2(juego.TabA1,TabA1);
-				Copy_Mat2(juego.TabA2,TabA2);
-				*score1=juego.score1;
-				*score2=juego.score2;
-				turno=juego.turno;
-				tiempo[0]=juego.tiempo[0];
-				tiempo[1]=juego.tiempo[1];
-				tiempo[2]=juego.tiempo[2];
-				tiempo[3]=juego.tiempo[3];
-				strcpy(nick1,juego.nick1);
-				strcpy(nick2,juego.nick2);
-				fclose(archivo);
 				fondo = create_bitmap(SCREEN_W, SCREEN_H);
 				fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
 				Tab_Bar_Rand(rand_bmp);
 				tiempo[0] = time(0);
-				while(*score1!=25 && *score2!=25){
+				while(*score1!=25 && *score2!=25 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo, rand_bmp, bar_j1, bar_j2);
@@ -190,10 +227,12 @@ void operar_juego(){
 				if(turno==1){
 					clear(screen);
 					allegro_message("JUGADOR 1 %s ES EL GANADOR",nick1);
-				}else{
+				}else if(turno==0){
 					clear(screen);
 					allegro_message("JUGADOR 2 %s ES EL GANADOR",nick2);
 				}
+				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
+				clear_bitmap(tablero);
 				break;
 			case 3:
 				break;
@@ -207,7 +246,7 @@ void operar_juego(){
 	}
 }
 
-int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char*nick2,int *score1,int *score2,int*tiempo, int rnd, Barco *j1, Barco *j2){
+int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, int rnd, Barco *j1, Barco *j2){
 	int *x=new int,*y = new int;
 	cursor=load_bitmap("dis/mira.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
@@ -235,7 +274,8 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		text_mode(-1);   
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
-		textprintf(fondo,font,250,25,blanco,"S = MOSTRAR TABLERO");
+		textprintf(fondo,font,250,25,blanco,"M = MOSTRAR TABLERO");
+		textprintf(fondo,font,450,25,blanco,"S = SALIR");
 		textprintf(status,font,100,250,blanco,"JUGADOR 1 %s",nick1);
 		textprintf(status,font,100,300,blanco," %i",*score1);
 		textprintf(status,font,100,350,blanco,"JUGADOR 2 %s",nick2);
@@ -293,31 +333,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			}
 		}
 		if(key[KEY_G]){
-			Tjuego juego;
-			Copy_Mat(Tab1,juego.Tab1);
-			Copy_Mat(Tab2,juego.Tab2);
-			Copy_Mat(TabA1,juego.TabA1);
-			Copy_Mat(TabA2,juego.TabA2);
-			juego.score1=*score1;
-			juego.score2=*score2;
-			juego.turno=jugador;
-			juego.tiempo[0]=tiempo[0];
-			juego.tiempo[1]=tiempo[1];
-			juego.tiempo[2]=tiempo[2];
-			juego.tiempo[3]=tiempo[3];
-			strcpy(juego.nick1,nick1);
-			strcpy(juego.nick2,nick2);
-			FILE *archivo;
-			if((archivo=fopen("juego.dat","wb+"))==NULL){
-				exit(1);
-			}
-			for(int i=0;i<8;i++){
-				fwrite(&j1[i],sizeof(Barco),1,archivo);
-				fwrite(&j2[i],sizeof(Barco),1,archivo);
-			}
-			fwrite(&juego,sizeof(Tjuego),1,archivo);
-			fclose(archivo);
-			rest(500);
+			guarda(Tab1,Tab2,TabA1,TabA2,jugador,nick1,nick2,score1,score2,tiempo,j1,j2);
 		}
 		if(key[KEY_A]){
 			while(!key[KEY_ESC]){
@@ -325,7 +341,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 				draw_sprite(screen,fondo,0,0);
 			}
 		}
-		if(key[KEY_S]){
+		if(key[KEY_M]){
             clear_bitmap(tablero);
             Tab_Bar_Rand(rnd);
 			while(!key[KEY_ESC]){
@@ -343,7 +359,38 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 			clear_bitmap(tablero);
 			Tab_Bar_Rand(rnd);
 		}
+		if(key[KEY_S]){
+			return 5;
+		}
 	}                   
+}
+
+void guarda(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2){
+	Tjuego juego;
+	Copy_Mat(Tab1,juego.Tab1);
+	Copy_Mat(Tab2,juego.Tab2);
+	Copy_Mat(TabA1,juego.TabA1);
+	Copy_Mat(TabA2,juego.TabA2);
+	juego.score1=*score1;
+	juego.score2=*score2;
+	juego.turno=jugador;
+	juego.tiempo[0]=tiempo[0];
+	juego.tiempo[1]=tiempo[1];
+	juego.tiempo[2]=tiempo[2];
+	juego.tiempo[3]=tiempo[3];
+	strcpy(juego.nick1,nick1);
+	strcpy(juego.nick2,nick2);
+	FILE *archivo;
+	if((archivo=fopen("juego.dat","wb+"))==NULL){
+		exit(1);
+	}
+	for(int i=0;i<8;i++){
+		fwrite(&j1[i],sizeof(Barco),1,archivo);
+		fwrite(&j2[i],sizeof(Barco),1,archivo);
+	}
+	fwrite(&juego,sizeof(Tjuego),1,archivo);
+	fclose(archivo);
+	rest(500);
 }
 
 void nicks(char * nickname){
