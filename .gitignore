@@ -1,2 +1,4 @@
 # Binarios ejecutables.
 *.exe
+# Binarios para datos.
+*.dat
