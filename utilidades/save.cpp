@@ -10,7 +10,7 @@ struct TRecord{
 int main(){
 	TRecord records[10], prueba[10];
 	int j=0;
-	FILE *archivo = fopen("save.dat", "rb+");
+	FILE *archivo = fopen("save.dat", "wb+");
 	for(int i=0; i<10; i++){
 		records[i].sec = 0;
 		strcpy(records[i].nickname, "SinRegistro");
