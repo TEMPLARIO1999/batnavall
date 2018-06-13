@@ -178,23 +178,24 @@ void operar_juego(){
 		bar_j1[i].x = -1;
 		bar_j2[i].x = -1;
 	}
-	char *nick1 = new char[25], *nick2=new char[25];
+	char *nick1,*nick2;
 	int i;
-	nicks(nick1);
-	nicks(nick2);
 	rand_bmp = Tab_Bar_Rand(rand_bmp);
 	FILE *archivo;
 	while (op!=0) {
 		switch(menu()){
 			case 1:
+				nick1=new char[25]; nick2=new char[25];
 				turno=(rand()%2)+1;
 				*score1=0; *score2=0;
 				allegro_message("Turno del jugador 1!");
 				Tab_Bar_Rand(rand_bmp);
+				nicks(nick1);
 				Posiciona(Tab1,nick1,bar_j1);
 				rest(500);
 				allegro_message("Turno del jugador 2!");
 				Tab_Bar_Rand(rand_bmp);
+				nicks(nick2);
 				Posiciona(Tab2,nick2,bar_j2);
 				Tab_Bar_Rand(rand_bmp);
 				rest(500);
@@ -211,12 +212,13 @@ void operar_juego(){
 				}
 				if(turno!=5)
 					finalizar_juego(turno, tiempo, nick1, nick2);
+				nick1='\0'; nick2='\0'; delete nick1; delete nick2;
 				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
 				clear_bitmap(tablero);
 				break;
 			case 2:
+				nick1=new char[25]; nick2=new char[25];
 				turno=carga(Tab1,Tab2,TabA1,TabA2,nick1,nick2,score1,score2,tiempo,bar_j1,bar_j2); 
-				turno=(rand()%2)+1;
 				Tab_Bar_Rand(rand_bmp);
 				fondo = create_bitmap(SCREEN_W, SCREEN_H);
 				fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
@@ -229,6 +231,7 @@ void operar_juego(){
 				}
 				if(turno!=5)
                 	finalizar_juego(turno, tiempo, nick1, nick2);
+                nick1='\0'; nick2='\0'; delete nick1; delete nick2;
 				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
 				clear_bitmap(tablero);
 				break;
@@ -476,6 +479,7 @@ void nicks(char * nickname){
 	}
 	rewind(archivo);
 	i=0;
+	strcat(nickname," ");
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand2){
@@ -610,6 +614,7 @@ int Posiciona(int **Tab,char *nick, Barco *barcos){
 		draw_sprite(fondo,barco4c,800,280);
 		draw_sprite(fondo,barco5c,800,120);
 		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
+		
 		textprintf(fondo,font,800,50,blanco,"NOMBRE JUGADOR %s",nick);
 		textprintf(fondo,font,800,100,blanco,"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
 		textprintf(fondo,font,800,260,blanco,"QUEDAN : %i",*b4c_rest);
@@ -622,6 +627,7 @@ int Posiciona(int **Tab,char *nick, Barco *barcos){
 		textprintf(fondo,font,45,20,blanco,"C = CANCELAR");
 		textprintf(fondo,font,200,20,blanco,"R = ROTAR BARCO");
 		textprintf(fondo,font,400,20,blanco,"A = AYUDA");
+	
 		draw_sprite(screen,fondo,0,0);
 		int ctrl=(8-(*N_barcos));
 		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
