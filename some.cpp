@@ -20,7 +20,7 @@ BITMAP *fondo;
 BITMAP *fondo_tab;
 //Bitmap para el cursor.
 BITMAP *cursor;
-//Bitmaps para el men?, son 5 identificando la selecci? de cada uno.
+//Bitmaps para el menu, son 5 identificando la selecci? de cada uno.
 BITMAP *menu0;
 BITMAP *menu1;
 BITMAP *menu2;
@@ -33,16 +33,18 @@ BITMAP *disp_agua;
 BITMAP *fuego;
 //Bitmap representando el status de cada jugador y el tiempo.
 BITMAP *status;
-//Bitmaps donde se expondr?la ayuda.
+//Bitmaps donde se expondra la ayuda.
 BITMAP *ayuda_pos;
 BITMAP *ayuda_ata;
-//Archivos .wav para reproducci? de sonido.
+//Archivos .wav para reproduccion de sonido.
 SAMPLE *selection;
 SAMPLE *posicion;
 SAMPLE *main_theme;
 SAMPLE *agua;
 SAMPLE *explosion;
 
+// Estructura de datos que guarda la informacion esencial para
+// guardar y cargar partidas.
 struct Tjuego{
 	int Tab1[10][10];
 	int Tab2[10][10];
@@ -56,12 +58,14 @@ struct Tjuego{
 	char nick2[25];
 };
 
+// Estructura auxiliar en el posicionamiento y dibujado de barcos.
 struct Barco {
 	int x;
 	int y;
 	int tipo;
 };
 
+// Estructura que permitira guardar y cargar records.
 struct TRecord{
     int sec;
     char nickname[40];
@@ -84,10 +88,10 @@ void Copy_Mat2(int Mat[10][10],int **Mat1); //compia la matriz del archivo en la
 void guarda(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //guarda el juego
 int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //carga los datos guardados en un archivo
 void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2);
-void limbar(Barco j[8]);
-void limMat(int **mat);
-void finalizar_juego(int turno, int *tiempo, char *nick1, char *nick2);
-void mostrar_records();
+void limbar(Barco j[8]); // 
+void limMat(int **mat); // 
+void finalizar_juego(int turno, int *tiempo, char *nick1, char *nick2); // Funcion que determina si es un record y finaliza el juego.
+void mostrar_records(); // Funcion que muestra los records al usuario.
 
 int main() {
 	srand(time(NULL)); //Necesitamos numeros aleatorios para disenios y nicknames.
@@ -98,6 +102,7 @@ int main() {
 }
 END_OF_MAIN() //Funcion de Allegro que marca el fin del main. Sin el el juego no se ejecuta.
 
+// Funcion que limpia todas las variables esenciales antes de iniciar una partida nueva.
 void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2){
 	limMat(Tab1); limMat(Tab2); limMat(TabA1); limMat(TabA2);
 	tiempo[0]=0; tiempo[1]=0; tiempo[2]=0; tiempo[3]=0; tiempo[4]=0;
@@ -105,6 +110,8 @@ void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j
 	limbar(j2);
 }
 
+
+// Funcion que es llamada para limpiar las matrices de juego.
 void limMat(int **mat){
 	for(int i=0;i<10;i++){
 		for(int j=0;j<10;j++){
@@ -113,54 +120,64 @@ void limMat(int **mat){
 	}
 }
 
+// Funcion que devuelve la variable de control de los barcos a -1
+// senalando que no ha sido posicionado.
 void limbar(Barco j[8]){
 	for(int i=0;i<8;i++){
 		j[i].x=-1;
 	}
 }
 
+// Cuando se deja una partida guardada la funcion es encargada de dejar todo como estaba cuando se guardo.
 int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2){
 	FILE *archivo;
+	// Accedemos al archivo que contiene la partida.
 	if((archivo=fopen("utilidades/juego.dat","rb+"))==NULL){
 		exit(1);
 	}
 	Tjuego juego;
+	// Le damos a cada jugador los barcos que tenian.
 	for(int i=0;i<8;i++){
 		fread(&j1[i],sizeof(Barco),1,archivo);
 		fread(&j2[i],sizeof(Barco),1,archivo);
 	}
+	// Leemos la variable de tipo juego que contiene los datos esenciales.
 	fread(&juego,sizeof(Tjuego),1,archivo);
+	// Recuperamos los datos de las matrices principales.
 	Copy_Mat2(juego.Tab1,Tab1);
 	Copy_Mat2(juego.Tab2,Tab2);
 	Copy_Mat2(juego.TabA1,TabA1);
 	Copy_Mat2(juego.TabA2,TabA2);
+	// Recuperamos las puntuaciones.
 	*score1=juego.score1;
 	*score2=juego.score2;
+	// Recuperamos el turno en juego.
 	int jugador=juego.turno;
+	// Recuperamos los tiempos en hh:mm:ss
 	tiempo[0]=juego.tiempo[0];
 	tiempo[1]=juego.tiempo[1];
 	tiempo[2]=juego.tiempo[2];
 	tiempo[3]=juego.tiempo[3];
+	// Recuperamos los nicknames de cada jugador.
 	strcpy(nick1,juego.nick1);
 	strcpy(nick2,juego.nick2);
+	// Cerramos el archivo para evitar la corrupcion del mismo.
 	fclose(archivo);
 	return jugador;
 }
 
+// Funciones que copian una matriz definida a una de punteros
+// y una de punteros a una definida.
 void Copy_Mat2(int Mat[10][10],int **Mat1){
-	for(int i=0;i<10;i++){
-		for(int j=0;j<10;j++){
+	for(int i=0;i<10;i++)
+		for(int j=0;j<10;j++)
 			*(*(Mat1+i)+j)=Mat[i][j];
-		}
-	}
 }
 
 void Copy_Mat(int **Mat,int Mat1[10][10]){
-	for(int i=0;i<10;i++){
-		for(int j=0;j<10;j++){
+	for(int i=0;i<10;i++)
+		for(int j=0;j<10;j++)
 			Mat1[i][j]=*(*(Mat+i)+j);
-		}
-	}
 }
 
 void operar_juego(){
@@ -171,71 +188,99 @@ void operar_juego(){
 	//tiempo es un vector de 4 espacios, uno para el acumulado, los otros 3 para HH:MM:SS.
 	//4 matrices que definira los tableros de puntuacion y ataque, 2 para cada jugador.
 	//Nick1 y Nick 2 le dara a cada jugador un nickname.
+	//bar_j1 y bar_j2 son las posiciones y tipo de barco de cada jugador.
 	int op=1, turno, *score1=new int, *score2=new int, rand_bmp = -1, tiempo[4] = {0,0,0,0};
 	int **Tab1=reservaMemoria(), **TabA1=reservaMemoria(), **Tab2=reservaMemoria(), **TabA2=reservaMemoria();
 	Barco bar_j1[8], bar_j2[8];
+	char *nick1,*nick2;
+	// A cada barco en su posicion x se le asigna -1 para identificar que esa posicion aun no ha sido usada.
 	for(int i=0; i<8; i++){
 		bar_j1[i].x = -1;
 		bar_j2[i].x = -1;
 	}
-	char *nick1,*nick2;
 	int i;
-	FILE *archivo;
+	// While hasta que la operacion sea 0.
+	// La operacion estara definida por lo que menu retorne.
 	while (op!=0) {
+		// Llamanos un switch condicionado a menu.
 		switch(menu()){
 			case 1:
+				// OPCION PARA INICIAR NUEVA PARTIDA.
+				// se le da un numero a rand_bmp para seleccionar el disenio aleatorio.
 				rand_bmp = Tab_Bar_Rand(rand_bmp);
+				// Vaciamos scores, nicknames y determinamos un turno aleatorio para posterior uso.
 				nick1=new char[25],nick2=new char[25];
 				turno=(rand()%2)+1;
 				*score1=0; *score2=0;
-				allegro_message("Turno del jugador 1!");
+				// El J1 posiciona sus barcos.
+				allegro_message("Jugador 1 posicione sus barcos!");
 				Tab_Bar_Rand(rand_bmp);
+				// Se le da un nickname al J1 antes de posicionar sus barcos.
 				strcpy(nick1, nicks(nick1));
 				Posiciona(Tab1,nick1,bar_j1);
 				rest(500);
-				allegro_message("Turno del jugador 2!");
+				// El J2 posiciona sus barcos.
+				allegro_message("Jugador 2 posicione sus barcos!");
 				Tab_Bar_Rand(rand_bmp);
+				// Se le da un nickname al J2 antes de posicionar sus barcos.
 				strcpy(nick2, nicks(nick2));
 				Posiciona(Tab2,nick2,bar_j2);
+				// Se llama esta funcion de vuelta para definir los bitmaps porque se hace una limpieza
+				// despues de cada posicionamiento de barcos.
 				Tab_Bar_Rand(rand_bmp);
 				rest(500);
+				// Basado en el sorteo anterior avisamos que jugador iniciara la partida.
 				allegro_message("Se hara un sorteo para determinar que jugador inicia, el resultado es...");
 				if(turno==1)
 					allegro_message("INICIA EL JUGADOR 1 (%s)", nick1);
 				else
 					allegro_message("INICIA EL JUGADOR 2 (%s)", nick2);
+				// Inicializamos nuestro contador de tiempo.
 				tiempo[0] = time(0);
+				// Mientras los puntajes sean distintos de 25 (puntaje para ganar), o que el jugador aun no haya decidido salir
+				// se estara ejecutando la funcion de ataque, donde cada jugador atacara al otro.
 				while(*score1!=5 && *score2!=5 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
 				}
+				// Mientas alguno de los jugadores haya finalizado el juego porque gano y no porque se haya salido
+				// la funcion se ejecutara.
 				if(turno!=5)
 					finalizar_juego(turno, tiempo, nick1, nick2);
+				// Finalmente limpiamos cada variable esencial para poder iniciar un nuevo juego si el usuario desea.
 				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
 				rand_bmp=-1;
 				clear_bitmap(tablero);
 				break;
 			case 2:
+				// OPCION PARA CARGAR PARTIDA.
 				nick1=new char[25]; nick2=new char[25];
+				// Cargamos nuestras variables principales para dejar el juego como se habia guardado.
 				turno=carga(Tab1,Tab2,TabA1,TabA2,nick1,nick2,score1,score2,tiempo,bar_j1,bar_j2); 
-				Tab_Bar_Rand(rand_bmp);
+				rand_bmp = Tab_Bar_Rand(rand_bmp);
+				// Generamos un nuevo fondo para el tablero y estatus.
 				fondo = create_bitmap(SCREEN_W, SCREEN_H);
 				fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
-				Tab_Bar_Rand(rand_bmp);
+				// Inicializamos rutinas de tiempo.
 				tiempo[0] = time(0);
+				// Mientras los puntajes sean distintos de 25 (puntaje para ganar), o que el jugador aun no haya decidido salir
+				// se estara ejecutando la funcion de ataque, donde cada jugador atacara al otro.
 				while(*score1!=5 && *score2!=5 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo, rand_bmp, bar_j1, bar_j2);
 				}
+				// Si el usuario gano y no forzo la salida entra a la funcion encargada de terminar el juego.
 				if(turno!=5)
                 	finalizar_juego(turno, tiempo, nick1, nick2);
+                // Se vuelven a limpiar las variables principales del juego por si el usuario desea iniciar una nueva partida.
 				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
 				rand_bmp=-1;
 				clear_bitmap(tablero);
 				break;
 			case 3:
+				// Llamamos la función que mostrara en pantalla los records.
 				mostrar_records();
 				break;
 			case 4:
@@ -248,14 +293,22 @@ void operar_juego(){
 	}
 }
 
+// FUNCION PARA MOSTRAR LOS RECORDS EN PANTALLA
 void mostrar_records(){
+	// i es para recuperar las 10 posiciones en los records.
+	// m y h son las posiciones HH:MM para poder imprimir el tiempo.
 	int i=0, m[10], h[10];
+	// Declaramos un vector de 10 posiciones para records, porque es lo que tiene almacenado el
+	// archivo binario para records.
     TRecord records[10];
-	FILE *archivo = fopen("utilidades/save.dat", "rb+");
+    // Abrimos nuestro archivo como lectura de binarios.
+	FILE *archivo = fopen("utilidades/records.dat", "rb");
     if(archivo==NULL){
         allegro_message("Error interno!");
         exit(1);
     }
+    // Leemos las 10 posiciones de los records. Asi como los minutos, horas y segundos de cada uno para 
+    // posterior uso en la impresion.
     fread(&records[i], sizeof(TRecord), 1, archivo);
     while(!feof(archivo)){
     	h[i] = records[i].sec/3600;
@@ -265,61 +318,84 @@ void mostrar_records(){
     	i++;
     	fread(&records[i], sizeof(TRecord), 1, archivo);
     }
+    // Modo de texto transparente
     text_mode(-1);
     rewind(archivo);
+    // Cargamos el bitmap para records.
     record = load_bitmap("dis/records.bmp", NULL);
+    // Imprimimos en pantalla cada uno de los records.
     for(i=0; i<10; i++)
     	textprintf(record,font,450,280+(i*40),makecol(255, 255, 255), "- %s               %02d:%02d:%02d", records[i].nickname, h[i], m[i], records[i].sec);
+    // Dibujamos el texto con el bitmap en pantalla.
     draw_sprite(screen, record, 0, 0);
+    // Ciclo infinito hasta que el usuario presione ESC, con esto saldra de los records.
     while(!key[KEY_ESC]){
 	}
+	// Cerramos el archivo para evitar perdida de datos.
 	fclose(archivo);
 }
 
+// FUNCION QUE DETERMINA SI HAY RECORD Y FINAL
 void finalizar_juego(int turno, int *tiempo, char *nick1, char *nick2){
+	// Declaramos un total de tiempo en SEGUNDOS para poder ser comparado sin complicaciones.
     int tot=tiempo[1]+tiempo[2]*60+tiempo[3]*60*60, i=0;
+    // Definimos un vector de records de 10 posiciones para poder comparar.
     TRecord records[10];
-
-    FILE *archivo = fopen("utilidades/save.dat", "rb+");
+	// Abrimos nuestro archivo de records. Si no existe cierra la ejecucion.
+    FILE *archivo = fopen("utilidades/records.dat", "rb+");
     if(archivo==NULL){
         allegro_message("Error interno!");
         exit(1);
 	}
-
+	// El turno en el que estaba en juego representa quien ha ganado los 25 puntos
+	// y gano el juego. Se envia un mensaje de quien gano.
 	if (turno==1)
 		allegro_message("JUGADOR 1 (%s) ES EL GANADOR", nick1);
 	else
 		allegro_message("JUGADOR 2 (%s) ES EL GANADOR", nick2);
-
+	// Recuperamos todos los records.
     fread(&records[i], sizeof(TRecord), 1, archivo);
     while(!feof(archivo)){
     	i++;
         fread(&records[i], sizeof(TRecord), 1, archivo);
     }
+    // Rebobinamos el archivo de records.
     rewind(archivo);
+    // Hacemos las comparaciones de tiempos. La condicion esta dada por:
+    // - Si el record esta en ceros, significa que puede modificarse por estar vacio.
+    // - Si el tiempo es menor a alguno de los records.
     for(i=0; i<10; i++){
     	if(tot<records[i].sec||records[i].sec==0){
+    		// Cuando un record es generado, los demas se desplazaran una posicion abajo
+    		// desde la posicion del nuevo record.
     		for(int j=i; j<9; j+=2){
     			records[j+1].sec=records[j].sec;
     			strcpy(records[j+1].nickname, records[j].nickname);
     		}
+    		// Escribimos el tiempo y el nombre del jugador ganador.
 			records[i].sec = tot;
     		if(turno==1)
     			strcpy(records[i].nickname, nick1);
     		else
     			strcpy(records[i].nickname, nick2);
+    		// Felicitamos al usuario.
     		allegro_message("Excelente, ha generado un nuevo record, consultelo en el menu!");
     		break;
 		}
 	}
+	// Escribimos los 10 records al archivo para que se guarden.
 	for(int i=0; i<10; i++)
         fwrite(&records[i], sizeof(TRecord), 1, archivo);
+    // Cerramos el archivo para evitar perdida de datos.
 	clear(screen);
     fclose(archivo);
 }
 
 int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, int rnd, Barco *j1, Barco *j2){
+	// x y y determinaran donde se esta haciendo click.
 	int *x=new int,*y = new int;
+	// Cargamos nuestro cursor, la tabla de estatus, el fondo del juego, la ayuda para el usuario
+	// y los sonidos para determinar ataques correctos y fallidos.
 	cursor=load_bitmap("dis/mira.bmp",NULL);
 	status=load_bitmap("dis/status.bmp",NULL);
 	fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
@@ -327,23 +403,30 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 	agua = load_wav("sonidos/agua.wav");
 	explosion = load_wav("sonidos/explosion.wav");
 	int blanco = makecol(255, 255, 255);
+	// Siempre que se cambia de turno actualizamos el tiempo.
 	tiempo[1] += time(0) - tiempo[0];
 	tiempo[0] = time(0);
+	// Determinamos cuando es cambio de minuto.
 	if(tiempo[1]>=60){
 		tiempo[2]+=tiempo[1]/60;
 		tiempo[1]%=60;
 	}
+	// Determinamos cuando es cambio de hora.
 	if(tiempo[2]>=60){
 		tiempo[3]+=tiempo[2]/60;
 		tiempo[2]%=60;
 	}
+	// Ciclo infinito hasta que se cumpla una condicion valida de salida 
+	// y se utilice break, es donde el usuario podra atacar al enemigo.
 	while(1){
+		// Imprimimos donde el usuario ha atacado correcta o incorrectamente.
 		if(jugador==1)
 			imprime_danio(TabA2, 0);	
 		else
 			imprime_danio(TabA1, 0);
+		// Dibujamos el raton, los textos de ayuda, puntajes y tiempo transcurrido.
 		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
-		text_mode(-1);   
+		text_mode(-1);
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
 		textprintf(fondo,font,250,25,blanco,"M = MOSTRAR TABLERO");
@@ -356,6 +439,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		textprintf(status, font, 100, 480, blanco, "%02d:%02d:%02d", tiempo[3], tiempo[2], tiempo[1]);
 		draw_sprite(fondo,status,700,0);
 		draw_sprite(screen,fondo,0,0);
+		// 
 		if(mouse_b &1){
 			for(int i=0; i<25000; i++)
 				printf('\0');
