@@ -20,7 +20,7 @@ BITMAP *fondo;
 BITMAP *fondo_tab;
 //Bitmap para el cursor.
 BITMAP *cursor;
-//Bitmaps para el menu, son 5 identificando la selecci? de cada uno.
+//Bitmaps para el menu, son 5 identificando la seleccion de cada uno.
 BITMAP *menu0;
 BITMAP *menu1;
 BITMAP *menu2;
@@ -73,28 +73,28 @@ struct TRecord{
 
 void init(); //Prototipo para la inicializacion de Allegro.
 void deinit(); //Prototipo para la funcion que se encarga de finalizar la ejecucion de Allegro.
-int menu(); //Prototipo que conmuta al inicio, reords y final del juego.
+int menu(); //Prototipo que conmuta al inicio, records y final del juego.
 int ** reservaMemoria(); //Prototipo que reservara la memoria necesaria para cada matriz principal.
-int Posiciona(int **Tab,char *nick, Barco *barcos); //Prototipo que se encargara de la posicion de cada uno de los barcos en el juego.
+int Posiciona(int **Tab,char *nick, Barco *barcos);  //Prototipo que se encargara de la posicion de cada uno de los barcos en el juego.
 void mover(int a,BITMAP * barco, BITMAP *barcov, BITMAP *fondo, int **tablero, int *,int *, Barco*,int n); //Prototipo de la funcion que movera los barcos con las teclas.
-void imprime_danio(int **tab, int modo);
+void imprime_danio(int **tab, int modo); //Prototipo que se encargara de imprimir parte dañada de los barcos
 void imprime_barco(Barco*);//Prototipo que imprime los barcos en el tablero.
-int Tab_Bar_Rand(int);//Funcion que seleccionar aleatoriamente los bitmaps.
+int Tab_Bar_Rand(int);//Funcion que selecciona aleatoriamente los bitmaps.
 char * nicks(char *);//Le dara un nickname a cada uno de los 2 jugadores.
 int ataque(int**Tab,int**TabA,int**Tab1,int**Tab2,int jugador,char*nick1,char*nick2,int*score1,int*score2,int*tiempo, int, Barco*, Barco*);//Definira la validez de los ataques e intercambiara turnos.
 void operar_juego(); //Funcion que inicializar y finalizar el juego.
 void Copy_Mat(int **Mat,int Mat1[10][10]);  //copia la matriz de juego en la matriz de la estructura
-void Copy_Mat2(int Mat[10][10],int **Mat1); //compia la matriz del archivo en la matris de juego
+void Copy_Mat2(int Mat[10][10],int **Mat1); //compia la matriz del archivo en la matriz de juego
 void guarda(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //guarda el juego
 int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2);  //carga los datos guardados en un archivo
-void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2);
-void limbar(Barco j[8]); // 
-void limMat(int **mat); // 
+void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j1, Barco *j2); //Limpia cada una de las variables al terminar un juego
+void limbar(Barco j[8]); // Limpia la estructura barco
+void limMat(int **mat); // Limpia las matrices principales del juego
 void finalizar_juego(int turno, int *tiempo, char *nick1, char *nick2); // Funcion que determina si es un record y finaliza el juego.
 void mostrar_records(); // Funcion que muestra los records al usuario.
 
 int main() {
-	srand(time(NULL)); //Necesitamos numeros aleatorios para disenios y nicknames.
+	srand(time(NULL)); //Necesitamos numeros aleatorios para diseños y nicknames.
 	init(); //Inicializamos allegro.
 	operar_juego(); //Inicializamos el administrador del juego.
 	deinit(); //Desinicializamos allegro.
@@ -110,7 +110,6 @@ void limpia(int **Tab1, int **Tab2,int **TabA1, int **TabA2,int*tiempo, Barco *j
 	limbar(j2);
 }
 
-
 // Funcion que es llamada para limpiar las matrices de juego.
 void limMat(int **mat){
 	for(int i=0;i<10;i++){
@@ -121,7 +120,7 @@ void limMat(int **mat){
 }
 
 // Funcion que devuelve la variable de control de los barcos a -1
-// senalando que no ha sido posicionado.
+// señalando que no ha sido posicionado.
 void limbar(Barco j[8]){
 	for(int i=0;i<8;i++){
 		j[i].x=-1;
@@ -239,7 +238,7 @@ void operar_juego(){
 				tiempo[0] = time(0);
 				// Mientras los puntajes sean distintos de 25 (puntaje para ganar), o que el jugador aun no haya decidido salir
 				// se estara ejecutando la funcion de ataque, donde cada jugador atacara al otro.
-				while(*score1!=5 && *score2!=5 && turno!=5){
+				while(*score1!=25 && *score2!=25 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo,rand_bmp, bar_j1, bar_j2);
@@ -266,7 +265,7 @@ void operar_juego(){
 				tiempo[0] = time(0);
 				// Mientras los puntajes sean distintos de 25 (puntaje para ganar), o que el jugador aun no haya decidido salir
 				// se estara ejecutando la funcion de ataque, donde cada jugador atacara al otro.
-				while(*score1!=5 && *score2!=5 && turno!=5){
+				while(*score1!=25 && *score2!=25 && turno!=5){
 					clear_bitmap(tablero);
 					Tab_Bar_Rand(rand_bmp);
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo, rand_bmp, bar_j1, bar_j2);
@@ -437,16 +436,22 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		textprintf(status,font,100,400,blanco," %i",*score2);
 		textprintf(status,font,100,450,blanco,"Tiempo transcurrido:");
 		textprintf(status, font, 100, 480, blanco, "%02d:%02d:%02d", tiempo[3], tiempo[2], tiempo[1]);
+		//imprimimos la barra de informacion del juego en el fondo y a su vez este en la pantalla
 		draw_sprite(fondo,status,700,0);
 		draw_sprite(screen,fondo,0,0);
-		// 
+		//Si detecta un clic con el mouse confirma si el ataque es o no valido
 		if(mouse_b &1){
+			//Espera un momento
 			for(int i=0; i<25000; i++)
 				printf('\0');
+			// Recupera las coordenadas del mouse y las convierte en numeros del 0 al 9
 			*x= (mouse_x-45)/60, *y=(mouse_y-45)/60;
 			if((*x>=0 && *x<10) && (*y>=0 && *y<10)){
+				//Si juagdor = 1 utiliza los datos de jugador y si no de jugador 2
 				if(jugador==1){
+					//Si acierta el ataque llena el espacio en la matriz principal con un 10 
 					if((*(*(Tab2+*y)+*x)>1 && *(*(Tab2+*y)+*x)<6) && (*(*(TabA2+*y)+*x)!=10 && *(*(TabA2+*y)+*x)!=9)){
+						//Reproduce sonido de explosion y espera a que termine la reproduccion
 						play_sample(explosion, 255, 0, 2000, 0);
 						rest(1300);
 						allegro_message("Jugador 1 tira de nuevo.");
@@ -454,19 +459,26 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 						*(*(TabA2+*y)+*x) = 10;
 						return jugador;
 					} else {
+						//Si la casilla ya esta atacada manda un aviso al jugador
 						if((*(*(TabA2+*y)+*x)==10 || *(*(TabA2+*y)+*x)==9)){
 							allegro_message("Ya has atacado en esa casilla.");
 							return jugador;
+						//Si la casilla no tiene barcos ni esta atacada manda el mensaje AGUA = Cambio de turno
 						}else{
 							play_sample(agua, 255, 0, 2000, 0);
 							rest(1000);
 							allegro_message("AGUA. Turno del jugador 2.");
+							//Da el valor a la casilla de 9 que significa tiro al agua
 							*(*(TabA2+*y)+*x) = 9;
 						}
+						//Cambia el valor de turno = Cambio de jugador
 						return jugador+1;
 					}
+				//Misma secuencia que para el jugador 1
 				} else {
+					//Si acierta el ataque llena el espacio en la matriz principal con un 10 
 					if((*(*(Tab1+*y)+*x)>1 && *(*(Tab1+*y)+*x)<6) && (*(*(TabA1+*y)+*x)!=10 && *(*(TabA1+*y)+*x)!=9)){
+						//Reproduce sonido de explosion y espera a que termine la reproduccion
 						play_sample(explosion, 255, 0, 2000, 0);
 						rest(1300);
 						allegro_message("Jugador 2 tira de nuevo.");
@@ -474,95 +486,125 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 						*(*(TabA1+*y)+*x) = 10;
 						return jugador;
 					} else {
+						//Si la casilla ya esta atacada manda un aviso al jugador
 						if((*(*(TabA1+*y)+*x)==10 || *(*(TabA1+*y)+*x)==9)){
 							allegro_message("Ya has atacado en esa casilla.");
 							return jugador;
+						//Si la casilla no tiene barcos ni esta atacada manda el mensaje AGUA = Cambio de turno 
 						}else{
 							play_sample(agua, 255, 0, 2000, 0);
 							rest(1000);
 							allegro_message("AGUA. Turno del jugador 1.");
+							//Da el valor a la casilla de 9 que significa tiro al agua
 							*(*(TabA1+*y)+*x) = 9;	
 						}
+						//Cambia el valor de turno = Cambio de jugador
 						return jugador-1;
 					}
 				}
 			}
 		}
+		//Si se oprime la tecla G guarda la partida
 		if(key[KEY_G]){
 			guarda(Tab1,Tab2,TabA1,TabA2,jugador,nick1,nick2,score1,score2,tiempo,j1,j2);
 		}
+		//Si se oprime la tecla A imprime la ayuda para el ataque
 		if(key[KEY_A]){
 			while(!key[KEY_ESC]){
 				draw_sprite(fondo,ayuda_ata,0,0);
 				draw_sprite(screen,fondo,0,0);
 			}
 		}
+		//Si se oprime la tecla M muestra el tablero del jugador en curso
 		if(key[KEY_M]){
             clear_bitmap(tablero);
+            //Carga el tablero y los barcos
             Tab_Bar_Rand(rnd);
 			while(!key[KEY_ESC]){
 				if(jugador==1){
+					//Imprime el daño y los barcos del jugador 1
 					imprime_barco(j1);
 					imprime_danio(TabA1, 1);	
 				} else { 
+					//Imprime el daño y los barcos del juagdor 2
 					imprime_barco(j2);            
 					imprime_danio(TabA2, 1);
 				}
+				//Imprime las estadistucas del juago  
 				textprintf(fondo,font,50,25,blanco,"ESC = Salir de vista.");
 				draw_sprite(fondo,status,700,0);
 				draw_sprite(screen,fondo,0,0);
 			}
 			clear_bitmap(tablero);
+			//Carga el tablero y los barcos
 			Tab_Bar_Rand(rnd);
 		}
+		//Si se oprime la tecla S retorna un 5 con el que sale del ciclo del juego
 		if(key[KEY_S]){
 			return 5;
 		}
 	}                   
 }
 
+//Guarda las variables necesarias para continuar la partida como se dejo
 void guarda(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *nick1,char *nick2,int *score1,int *score2,int*tiempo, Barco *j1, Barco *j2){
+	//Declara la estructura en la que se pueden guardar cada una de las variables
 	Tjuego juego;
+	//Copia las matrices principales del juego
 	Copy_Mat(Tab1,juego.Tab1);
 	Copy_Mat(Tab2,juego.Tab2);
 	Copy_Mat(TabA1,juego.TabA1);
 	Copy_Mat(TabA2,juego.TabA2);
+	//Copia las puntuaciones
 	juego.score1=*score1;
 	juego.score2=*score2;
+	//COpia el turno 
 	juego.turno=jugador;
+	//Copia el tiempo que ha transcurrido
 	juego.tiempo[0]=tiempo[0];
 	juego.tiempo[1]=tiempo[1];
 	juego.tiempo[2]=tiempo[2];
 	juego.tiempo[3]=tiempo[3];
+	//Copia los nicks de ambos jugadores
 	strcpy(juego.nick1,nick1);
 	strcpy(juego.nick2,nick2);
+	//Abrimos el archivo 
 	FILE *archivo;
 	if((archivo=fopen("utilidades/juego.dat","wb+"))==NULL){
 		exit(1);
 	}
 	for(int i=0;i<8;i++){
+		//Guardamos las estructuras de cada barco de ambos juagdores
 		fwrite(&j1[i],sizeof(Barco),1,archivo);
 		fwrite(&j2[i],sizeof(Barco),1,archivo);
 	}
+	//Guardamos la estructura que contiene las variables del juego
 	fwrite(&juego,sizeof(Tjuego),1,archivo);
 	fclose(archivo);
 	rest(500);
 }
 
+//Retorna un nick 
 char * nicks(char * nickname){
+	//Abre el archivo que contiene cada nick
 	FILE *archivo;
+	//Copia a la variable principal la cadena nula
 	strcpy(nickname, "");
 	archivo = fopen("utilidades/nicks.txt", "r");
+	//Obtiene dos numero random y declara los char para leer los nicks
 	int rand1 = rand() % 19, rand2 = rand() % 19, i=0;
 	char *aux1, *aux2; aux1=new char[25]; aux2=new char [25]; 
+	//Busca y lee el nick random 1 y copia a la cadena principal
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand1)
 			strcat(nickname, aux1);
 		i++;
 	}
+	//Regresa al inicio del archivo
 	rewind(archivo);
 	i=0;
+	//Busca y lee el nick random 2 y copia a la cadena principal
 	while(!feof(archivo)){
 		fscanf(archivo, "%s %s", aux1, aux2);
 		if(i==rand2)
@@ -573,12 +615,16 @@ char * nicks(char * nickname){
 	return nickname;
 }
 
+//Obtiene un numero random si este no existe y carga los bitmaps de acuerdo a dicho numero
 int Tab_Bar_Rand(int rand_bmp){
+	//Carga los bitmaps del barco destruido, disparo al agua y fuego 
     barco_des=load_bitmap("dis/barco_des.bmp",NULL);
     disp_agua=load_bitmap("dis/disp_agua.bmp",NULL);
     fuego=load_bitmap("dis/fuego.bmp",NULL);
 	if(rand_bmp<0)
+		//Obtiene un numero random
 		rand_bmp=rand()%4;
+	//De acuerdo al numero carga el tablero y cada barco
 	switch(rand_bmp){
 		case 0:
 			tablero=load_bitmap("dis/tableros/fondo-0.bmp",NULL);
@@ -628,33 +674,43 @@ int Tab_Bar_Rand(int rand_bmp){
 	return rand_bmp;
 }
 
+//Imprime el daño, el barco destruido y el disparo al agua 
 void imprime_danio(int **tab, int modo){
 	int x, y;
+	//Si mandamos un 1 queremos imprimir daño
 	if(modo){
 		for(int i=0; i<10; i++)
 			for(int j=0; j<10; j++)
+				//Si la casilla es igual a 10 imprime el fuego
 				if(*(*(tab+i)+j) == 10){
 					x=((i-1)*60)+90; y=((j)*60)+30;
 					masked_blit(fuego,tablero,0,0,y,x,60,60);
 				}
-	} else {		
+	} else {
+	//Si mandamso un 0 queremos imprimir barco destruido y disparo al agua		
 		for(int i=0; i<10; i++)
 			for(int j=0; j<10; j++){
 				x=((i-1)*60)+90; y=((j)*60)+30;
+				//Si la casilla es igual a 9 imrpime disparo al agua o X
 				if(*(*(tab+i)+j) == 9)
 					draw_sprite(tablero,disp_agua,y,x);
+				//Si la casilla es igual a 10 imprime barco des o palomita
 				else if(*(*(tab+i)+j) == 10)
 					draw_sprite(tablero,barco_des,y,x);
 			}
 	}
+	//Imprime tod en el tablero
 	draw_sprite(fondo,fondo_tab,0,0);
 	draw_sprite(fondo,tablero,45,45);
 }
 
+//Recibe la estructura de los barcos e imprime estos
 void imprime_barco(Barco *barcos){
 	for(int i=0; i<8; i++){
+		//Si x es menor a 0 sale del ciclo porque no hay mas barcos a imprimir 
 		if(barcos[i].x<0)
 			break;
+		//De acuerdo al tipo de barco imprime en x,y la imagen
 		switch(barcos[i].tipo){
 			case 1: 	draw_sprite(tablero,barco2cv, barcos[i].x-45,  barcos[i].y-45);
 				break;
@@ -674,74 +730,90 @@ void imprime_barco(Barco *barcos){
 				break;
 		}
 	}
+	//Imprime todo en el tablero
 	draw_sprite(fondo,fondo_tab,0,0);
 	draw_sprite(fondo,tablero,45,45);
 }
 
+//Funcion utilizada para posicionar los barcos al inicio de la partida
 int Posiciona(int **Tab,char *nick, Barco *barcos){
+	//Crea el fondo (buffer) y carga el fondo azul
 	fondo = create_bitmap(SCREEN_W, SCREEN_H);
 	fondo_tab = load_bitmap("dis/pantalla.bmp",NULL);
+	//Carga los sonidos utilizados en el posicionamiento de los barcos
 	selection = load_wav("sonidos/seleccion.wav");
 	posicion = load_wav("sonidos/posicion.wav");
+	//Carga la imagen de ayuda para posicionar barcos
 	ayuda_pos = load_bitmap("dis/ayuda/posicionar.bmp",NULL);
 	int blanco = makecol(255, 255, 255);
+	//Declara las variables que controlan los barcos faltantes
 	int *b5c_rest=new int,*b4c_rest=new int,*b3c_rest=new int,*b2c_rest=new int,*N_barcos=new int;
 	*b5c_rest=1; *b4c_rest=2; *b3c_rest=2; *b2c_rest=3; *N_barcos=8; 
-	while(*N_barcos!=0 && !key[KEY_ESC]){
+	//Entra a un ciclo que permite posicionar cada barco y despues se sale
+	while(*N_barcos!=0 ){
+		//Limpia el fondo
 		clear_bitmap(fondo);
+		//Imprime los barcos modelo para que el jugador elija, ademas del tablero en el buffer
 		draw_sprite(fondo, fondo_tab, 0, 0);
 		draw_sprite(fondo,tablero,45,45);
 		draw_sprite(fondo,barco2c,800,600);
 		draw_sprite(fondo,barco3c,800,440);
 		draw_sprite(fondo,barco4c,800,280);
 		draw_sprite(fondo,barco5c,800,120);
-		text_mode(-1);                                                                //hace que el texto impreso sea sin fondo
-		
+		text_mode(-1);                                                  //hace que el texto impreso sea sin fondo
+		//Imprime el nombre del jugador y los barcos faltantes de cada tipo
 		textprintf(fondo,font,800,50,blanco,"NOMBRE JUGADOR %s",nick);
-		textprintf(fondo,font,800,100,blanco,"QUEDAN : %i",*b5c_rest);  //indican cuantos barcos le quedan al usuario
+		textprintf(fondo,font,800,100,blanco,"QUEDAN : %i",*b5c_rest); 
 		textprintf(fondo,font,800,260,blanco,"QUEDAN : %i",*b4c_rest);
 		textprintf(fondo,font,800,420,blanco,"QUEDAN : %i",*b3c_rest);
 		textprintf(fondo,font,800,580,blanco,"QUEDAN : %i",*b2c_rest);
-		textprintf(fondo,font,730,150,blanco,"TECLA 5");                //con que tecla selecciona cada barco
+		//Imprime las teclas para elegir cada tipo de barco 
+		textprintf(fondo,font,730,150,blanco,"TECLA 5");                
 		textprintf(fondo,font,730,310,blanco,"TECLA 4");
 		textprintf(fondo,font,730,470,blanco,"TECLA 3");
 		textprintf(fondo,font,730,630,blanco,"TECLA 2");
+		//Imprime las teclas para elegir opciones diversas
 		textprintf(fondo,font,45,20,blanco,"C = CANCELAR");
 		textprintf(fondo,font,200,20,blanco,"R = ROTAR BARCO");
 		textprintf(fondo,font,400,20,blanco,"A = AYUDA");
-	
+		//Imprime el fondo en pantalla
 		draw_sprite(screen,fondo,0,0);
 		int ctrl=(8-(*N_barcos));
-		if(key[KEY_2] && *b2c_rest!=0){               //al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
-			(*b2c_rest)--; (*N_barcos)--;                  //se resta al numero de barcos general y de un tipo en concreto
-			mover(120, barco2c, barco2cv,fondo, Tab, b2c_rest,N_barcos, barcos,1);                  //funcion encargada del movimiento
+		 //Al presionar cualquier tecla permite al usuario posicionar un barco de n celdas
+		 //Se resta al numero de barcos general y de un tipo en concreto
+		if(key[KEY_2] && *b2c_rest!=0){              
+			(*b2c_rest)--; (*N_barcos)--;                  
+			mover(120, barco2c, barco2cv,fondo, Tab, b2c_rest,N_barcos, barcos,1);       //funcion encargada del movimiento
 		}
 		if(key[KEY_3] && *b3c_rest!=0){
 			(*b3c_rest)--; (*N_barcos)--;
-			mover(180, barco3c, barco3cv,fondo, Tab, b3c_rest,N_barcos, barcos,3);
+			mover(180, barco3c, barco3cv,fondo, Tab, b3c_rest,N_barcos, barcos,3);       //funcion encargada del movimiento
 		}
 		if(key[KEY_4] && *b4c_rest!=0){
 			(*b4c_rest)--; (*N_barcos)--;
-			mover(240, barco4c, barco4cv,fondo, Tab, b4c_rest,N_barcos, barcos,5);
+			mover(240, barco4c, barco4cv,fondo, Tab, b4c_rest,N_barcos, barcos,5);       //funcion encargada del movimiento
 		}
 		if(key[KEY_5] && *b5c_rest!=0){
 			(*b5c_rest)--; (*N_barcos)--;
-			mover(300, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos, barcos,7);
+			mover(300, barco5c, barco5cv, fondo, Tab, b5c_rest,N_barcos, barcos,7);      //funcion encargada del movimiento
 		}
-		if(key[KEY_A]){                                                        //ayuda 
+		//Al presionar la tecla A proporciona ayuda al jugador
+		if(key[KEY_A]){                                                         
 			while(!key[KEY_ESC]){
 				draw_sprite(fondo,ayuda_pos,0,0);
 				draw_sprite(screen,fondo,0,0);
 			}
 		}
 	}
+	//Limpia cada bitmap dejandolo listo para el uso en cualquier otra funcion
 	clear_bitmap(fondo);
 	clear_bitmap(tablero);
+	//Imprime el fondo en el buffer y el buffer en pantalla
 	draw_sprite(fondo,fondo_tab,0,0);
 	draw_sprite(screen,fondo,0,0);
 }
 
-
+// --------->
 void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num, Barco *barcos,int n){
 	int x=75,y=75, vertical=-1, lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45, ctrl=(8-(*num)-1);
 	while(!key[KEY_ENTER] && !key[KEY_C]){
@@ -845,7 +917,7 @@ int menu(){
 	menu4=load_bitmap("menu/menu-4.bmp",NULL);
 	play_sample(main_theme, 255, 0, 1000, 0);
 	do {
-		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {         
+		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {   
 			draw_sprite(fondo,menu1,0,0);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
 			if(mouse_b & 1) opcion=1;                                         //si hace clic izquierdo opcion=1
 		} else if(mouse_x>390 && mouse_x<810 && mouse_y>440 && mouse_y<475) { 
