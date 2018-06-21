@@ -1,8 +1,8 @@
-#include <allegro.h>
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <allegro.h>   //libreria de allegro (modo grafico)
+#include <time.h>      //libreria utilizada para numeros random y para el tiempo
+#include <stdlib.h>    //Libreria estandar con funciones como srand
+#include <stdio.h>     //Libreria de entrada y salida de datos, funciones como fopen, fclose, etc
+#include <string.h>    //Libreria utilizada para las funciones strcat, etc de los nicknames
 
 //Bitmap para el tablero donde se posicionan los barcos
 BITMAP *tablero;
@@ -132,7 +132,8 @@ int carga(int **Tab1, int **Tab2,int **TabA1, int **TabA2,char *nick1,char *nick
 	FILE *archivo;
 	// Accedemos al archivo que contiene la partida.
 	if((archivo=fopen("utilidades/juego.dat","rb+"))==NULL){
-		exit(1);
+		allegro_message("No existe una partida guardada");
+		return 5;
 	}
 	Tjuego juego;
 	// Le damos a cada jugador los barcos que tenian.
@@ -271,8 +272,10 @@ void operar_juego(){
 					turno = ataque(Tab1, Tab2, TabA1, TabA2, turno,nick1,nick2,score1,score2,tiempo, rand_bmp, bar_j1, bar_j2);
 				}
 				// Si el usuario gano y no forzo la salida entra a la funcion encargada de terminar el juego.
-				if(turno!=5)
-                	finalizar_juego(turno, tiempo, nick1, nick2);
+				if(turno!=5){
+					finalizar_juego(turno, tiempo, nick1, nick2);
+					remove("utilidades\\juego.dat");
+				}
                 // Se vuelven a limpiar las variables principales del juego por si el usuario desea iniciar una nueva partida.
 				limpia(Tab1, Tab2,TabA1,TabA2,tiempo,bar_j1,bar_j2);
 				rand_bmp=-1;
@@ -301,7 +304,7 @@ void mostrar_records(){
 	// archivo binario para records.
     TRecord records[10];
     // Abrimos nuestro archivo como lectura de binarios.
-	FILE *archivo = fopen("utilidades/records.dat", "rb");
+	FILE *archivo = fopen("utilidades/save.dat", "rb");
     if(archivo==NULL){
         allegro_message("Error interno!");
         exit(1);
@@ -341,7 +344,7 @@ void finalizar_juego(int turno, int *tiempo, char *nick1, char *nick2){
     // Definimos un vector de records de 10 posiciones para poder comparar.
     TRecord records[10];
 	// Abrimos nuestro archivo de records. Si no existe cierra la ejecucion.
-    FILE *archivo = fopen("utilidades/records.dat", "rb+");
+    FILE *archivo = fopen("utilidades/save.dat", "rb+");
     if(archivo==NULL){
         allegro_message("Error interno!");
         exit(1);
@@ -424,7 +427,8 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		else
 			imprime_danio(TabA1, 0);
 		// Dibujamos el raton, los textos de ayuda, puntajes y tiempo transcurrido.
-		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
+		if(mouse_x<645 && mouse_x>45 && mouse_y<645 && mouse_y>45)
+			masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,60,60);
 		text_mode(-1);
 		textprintf(fondo,font,50,25,blanco,"G = GUARDAR");
 		textprintf(fondo,font,150,25,blanco,"A = AYUDA");
@@ -440,7 +444,7 @@ int ataque(int **Tab1, int **Tab2,int **TabA1, int **TabA2, int jugador,char *ni
 		draw_sprite(fondo,status,700,0);
 		draw_sprite(screen,fondo,0,0);
 		//Si detecta un clic con el mouse confirma si el ataque es o no valido
-		if(mouse_b &1){
+		if((mouse_b &1) && (mouse_x<645 && mouse_x>45 && mouse_y<645 && mouse_y>45)){
 			//Espera un momento
 			for(int i=0; i<25000; i++)
 				printf('\0');
@@ -813,85 +817,92 @@ int Posiciona(int **Tab,char *nick, Barco *barcos){
 	draw_sprite(screen,fondo,0,0);
 }
 
-// --------->
+//Funcion que se encarga del movimiento de los barcos al posicionarlos
 void mover(int a, BITMAP *barco, BITMAP *barcov, BITMAP *fondo, int **tab, int *rest,int *num, Barco *barcos,int n){
+	//Variables principales de coordenadas x,y y limites del tablero
 	int x=75,y=75, vertical=-1, lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45, ctrl=(8-(*num)-1);
-	while(!key[KEY_ENTER] && !key[KEY_C]){
-		readkey();
-		if(key[KEY_RIGHT]) {
+	while(!key[KEY_ENTER] && !key[KEY_C]){ //Mientras no se cancele o establesca un barco continua en la funcion
+		readkey(); //lee una llave
+		if(key[KEY_RIGHT]) { //si es hacia la derecha aumenta x cuidando que no se salga del limite
 			x+=60;
 			if(x>lim_der) x-=60;
 		}
-		if(key[KEY_LEFT]) {
+		if(key[KEY_LEFT]) { //si es hacia la izquierda disminuye x cuidando que no se salga del limite
 			x-=60;
 			if(x<lim_izq) x+=60;
 		}
-		if(key[KEY_UP]) {
+		if(key[KEY_UP]) { //si es hacia arriba disminuye y cuidando que no se salga del limite
             y-=60;
 			if(y<lim_sup) y+=60;
 		}		
-		if(key[KEY_DOWN]) {
+		if(key[KEY_DOWN]) { //si es hacia abajo aumenta y cuidando que no se salga del limite
 			y+=60;
 			if(y>lim_inf) y-=60;
 		}
+		//Secuencia de sonido del movimiento
 		stop_sample(selection);
 		play_sample(selection, 255, 0, 2000, 0);
+		//Si se presiona R activa la variable vertical y cambia los limites
 		if(key[KEY_R]){
 			vertical*=-1;
-			x=75,y=75;
+			x=75,y=75; //regresa las coordenadas al inicio para evitar errores
 			if(vertical>0){
 				lim_sup=45, lim_inf=705-a, lim_der=645, lim_izq=45;
 			} else {
 				lim_sup=45, lim_inf=645, lim_der=705-a, lim_izq=45;
 			}
 		}
+		//Imprime el tablero en el fondo
 		draw_sprite(fondo,tablero,45,45);
-		if(vertical<0)
+		if(vertical<0) //Si es horizontal imprime barco horizontal
 			draw_sprite(fondo,barco,x,y);
-		else
+		else  //Si es vertical imprime barco vertical
 			draw_sprite(fondo,barcov,x,y);
-		draw_sprite(screen,fondo,0,0);
+		draw_sprite(screen,fondo,0,0); //Imprime el fondo en pantalla
 	}
-	if(key[KEY_C]) {
-		(*rest)++; (*num)++;
+	if(key[KEY_C]) {           //Si se oprime C se cancela el proceso 
+		(*rest)++; (*num)++;   //Los barcos restantes y barcos del tipo elegido regresan al numero original
 	} 
-	if(key[KEY_ENTER]) {
-		int band=1, x_tab=(x-75)/60, y_tab=(y-75)/60;
-		if(vertical>0){
+	if(key[KEY_ENTER]) { //Si se oprime enter
+		int band=1, x_tab=(x-75)/60, y_tab=(y-75)/60; //Obtenemos los numeros de casilla
+		if(vertical>0){ //Si es horizontal guardamos en la matriz numeros horizontales
 			for(int i=y_tab, j=0; j<a/60; i++, j++)
-				if(tab[i][x_tab])
+				if(tab[i][x_tab]) //Si encuentra un 1 no posiciona
 					band=0;
 			if(band){
+				//Secuencia de sonido de posicion
 				play_sample(posicion, 255, 0, 2000, 0);
 				for(int i=y_tab, j=0; j<a/60; i++, j++)
-						tab[i][x_tab]=a/60;
+						tab[i][x_tab]=a/60; //Guardamos el numero que corresponde a la casilla del barco
 				
 			}
-		} else {
+		} else { //Si es vertical guardamos en la matriz numeros verticales
 			for(int i=x_tab, j=0; j<a/60; i++, j++)
-				if(tab[y_tab][i])
+				if(tab[y_tab][i]) //Si encuentra un 1 no posiciona
 					band=0;
 			if(band){
+				//Secuencia de sonido de posicion
 				play_sample(posicion, 255, 0, 2000, 0);
 				for(int i=x_tab, j=0; j<a/60; i++, j++)
-					tab[y_tab][i]=a/60;
+					tab[y_tab][i]=a/60; //Guardamos el numero que corresponde a la casilla del barco
 			}
 		}
-		if(band){
+		if(band){ //Guarda los barcos en la estructura 
 			if(vertical>0)
-				barcos[ctrl].tipo=n;
+				barcos[ctrl].tipo=n; //Que barco es en casillas
 			else
-				barcos[ctrl].tipo=n+1;
-			barcos[ctrl].x = x;
-			barcos[ctrl].y = y;
-		} else {
+				barcos[ctrl].tipo=n+1; //Que barco es en casillas
+			barcos[ctrl].x = x; //Coordenada en x
+			barcos[ctrl].y = y; //Coordenada en y
+		} else { //Manda mensaje de error si no se posiciona
 			allegro_message("No puedes ponerlo aqui!");
 			(*rest)++; (*num)++;
 		}
 	}
-	imprime_barco(barcos);
+	imprime_barco(barcos); //Va imprimiendo los barcos para que el jugador pueda verlos
 }
 
+//Funcion creada para reservar memoria de una matriz de 10x10 e igualar a cero cada espacio
 int ** reservaMemoria(){
 	int **Tab; Tab=new int*[10];
 	for(int i=0;i<10;i++){
@@ -902,67 +913,76 @@ int ** reservaMemoria(){
 			*(*(Tab+i)+j)=0;
 		}
 	}
-	return Tab;
+	return Tab; //Retorna la matriz declarada
 }
 
+//Funcion encargada del menu de inicio del juego 
 int menu(){
-	int opcion=0;                                   //variable de control del menu
-	fondo=create_bitmap(1200,750);
-	main_theme=load_wav("sonidos/menu.wav");
-	cursor=load_bitmap("dis/papa.bmp",NULL);  //imagen del cursor
-	menu0=load_bitmap("menu/menu-0.bmp",NULL);    //imagenes del menu
+	int opcion=0;                                //variable de control, de acuerdo al clic esta se modifica
+	fondo=create_bitmap(1200,750);               //Buffer del fondo
+	main_theme=load_wav("sonidos/menu.wav");     //Secuencia de sonido del menu
+	cursor=load_bitmap("dis/papa.bmp",NULL);     //imagen del cursor, una PAPA!
+	//Imagenes para cada caso en el menu
+	menu0=load_bitmap("menu/menu-0.bmp",NULL);   
 	menu1=load_bitmap("menu/menu-1.bmp",NULL);
 	menu2=load_bitmap("menu/menu-2.bmp",NULL);
 	menu3=load_bitmap("menu/menu-3.bmp",NULL);
 	menu4=load_bitmap("menu/menu-4.bmp",NULL);
+	//Inicia secuencia del sonido
 	play_sample(main_theme, 255, 0, 1000, 0);
 	do {
+		//Condicionales que verifican las coordenadas del mouse y en base a ellas cambia la imagen del menu
 		if(mouse_x>415 && mouse_x<795 && mouse_y>365 && mouse_y<400) {   
-			draw_sprite(fondo,menu1,0,0);                                //si el raton esta entre las coordenas anteriores se imprime menu1 en fondo
-			if(mouse_b & 1) opcion=1;                                         //si hace clic izquierdo opcion=1
+			draw_sprite(fondo,menu1,0,0);     //Imprime la imagen de menu seleccionada
+			if(mouse_b & 1) opcion=1;         //Si se hace un clic la variable opcion toma el valor seleccionado
 		} else if(mouse_x>390 && mouse_x<810 && mouse_y>440 && mouse_y<475) { 
-			draw_sprite(fondo,menu2,0,0);
-			if(mouse_b & 1) opcion=2;
+			draw_sprite(fondo,menu2,0,0);     //Imprime la imagen de menu seleccionada
+			if(mouse_b & 1) opcion=2;         //Si se hace un clic la variable opcion toma el valor seleccionado
 		} else if(mouse_x>495 && mouse_x<700 && mouse_y>515 && mouse_y<550) {
-			draw_sprite(fondo,menu3,0,0);
-			if(mouse_b & 1) opcion=3;
+			draw_sprite(fondo,menu3,0,0);     //Imprime la imagen de menu seleccionada
+			if(mouse_b & 1) opcion=3;         //Si se hace un clic la variable opcion toma el valor seleccionado
 		} else if(mouse_x>525 && mouse_x<665 && mouse_y>590 && mouse_y<620) {
-			draw_sprite(fondo,menu4,0,0);
-			if(mouse_b & 1) opcion=4;
-		} else 	draw_sprite(fondo,menu0,0,0);
-		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27);                  //imprime el cursor, respetando su transparencia en fondo
-		draw_sprite(screen,fondo,0,0);                                 //imprime el fondo en pantalla
-	} while(opcion==0);
+			draw_sprite(fondo,menu4,0,0);     //Imprime la imagen de menu seleccionada
+			if(mouse_b & 1) opcion=4;         //Si se hace un clic la variable opcion toma el valor seleccionado
+		} else 	draw_sprite(fondo,menu0,0,0); //Imprime la imagen de menu seleccionada
+		masked_blit(cursor,fondo,0,0,mouse_x,mouse_y,27,27); //imprime el cursor, respetando su transparencia en fondo
+		draw_sprite(screen,fondo,0,0);                       //imprime el fondo en pantalla
+	} while(opcion==0);                                      //Sale del menu hasta recibir una accion 
+	//Elimina cada uno de los bitmaps utilizados, esto para liberar memoria ya que el menu se mostrara poco
 	delete fondo;
 	delete cursor;
-	delete menu0;                                                           //elimina los bitmaps
+	delete menu0;                                                           
 	delete menu1;
 	delete menu2;
 	delete menu3;
 	delete menu4;
-	stop_sample(main_theme);
-	rest(200);
-	clear(screen);                                                           //al salir del menu se limpia la pantalla
+	stop_sample(main_theme);                  //Detiene la secuencia de sonido del menu
+	rest(200);                                //Espera un momento
+	clear(screen);                            //Limpia la pantalla
 	return opcion;
 }
 
-void init() {                                                                //crea pantalla e instala el mouse y teclado
+//Funcion encargada de las configuraciones iniciales de allegro
+//Inicia allegro y crea una ventada de fondo negro de 1200 por 750 pixeles
+void init() {                              
 	int depth, res;
-	allegro_init();
-	depth = desktop_color_depth();
-	if (depth == 0) depth = 32;
-	set_color_depth(depth);
-	res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, 1200, 750, 0, 0);
+	allegro_init();         //Inicia allegro
+	depth = desktop_color_depth(); 
+	if (depth == 0) depth = 32;                                       
+	set_color_depth(depth);                                  
+	res = set_gfx_mode(GFX_AUTODETECT_WINDOWED, 1200, 750, 0, 0);  //Crea una ventana de 1200 x 750 pixeles
 	if (res != 0) {
 		allegro_message(allegro_error);
 		exit(-1);
 	}
-	install_keyboard();
-	install_mouse();
-	install_sound(DIGI_AUTODETECT,MIDI_AUTODETECT,NULL);
+	install_keyboard();                                  //Instala el teclado
+	install_mouse();                                     //Instala el mouse
+	install_sound(DIGI_AUTODETECT,MIDI_AUTODETECT,NULL); //Instala el sonido
 	
 }
 
+//Funcion encargada de terminar la ejecucion de allegro
+//Limpia el keybuf y destruye las variables utilizadas para el sonido
 void deinit() {
 	clear_keybuf();
 	destroy_sample(selection);
