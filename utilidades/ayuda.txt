@@ -1,0 +1,31 @@
+                                                  BIENVENIDO A LA AYUDA GENERAL DEL JUEGO
+Usted cuenta con un menu de 4 opciones
+- Presione Nueva Partida para generar un juego desde cero. Se le asignara un nickname a cada jugador.
+- Presione Cargar Partida para cargar un juego previamente iniciado. Se recobran puntajes y tiempo.
+- Presione Records para ver los records que han impuesto jugadores anteriores.
+- Presione salir para terminar la ejecucion del programa.
+Cuando inicia una nueva partida usted cuenta con 8 barcos:
+ - 1 de 5 casillas
+ - 2 de 4 casillas
+ - 2 de 3 casillas
+ - 3 de 2 casillas
+Una vez que cada jugador posicione sus barcos comenzara el juego.
+
+REGLAS DEL JUEGO:
+- Cuando un jugador tire y falle se mostrara un mensaje que indique que es turno del oponente.
+- Si se acierta un tiro, se permitira hacer otro.
+- Usted puede ver en su partida tiros correctos e incorrectos.
+- Si tira en un sitio donde ya tiro no pierde el turno.
+- Puede ver el tablero con sus barcos cada que lo desee.
+- Los danios a barcos se representan con una flamita.
+- Los tiros correctos se representan con una palomita verde.
+- Los tirros errados con una tacha de color azul.
+
+El primer jugador en acumular 25 puntos ganara.
+Se puede guardar y salir cuando el juego esta en progreso.
+Los menus de ayuda se muestran en pantalla.
+
+Presione la tecla ESC para salir de esta pantalla de ayuda.
+Hecho con AMOR por Roman y Daniel.
+                                       DISFRUTE!!!!!!!
+                          
