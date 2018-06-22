@@ -596,7 +596,7 @@ char * nicks(char * nickname){
 	strcpy(nickname, "");
 	archivo = fopen("utilidades/nicks.txt", "r");
 	//Obtiene dos numero random y declara los char para leer los nicks
-	int rand1 = rand() % 19, rand2 = rand() % 19, i=0;
+	int rand1 = rand() % 31, rand2 = rand() % 31, i=0;
 	char *aux1, *aux2; aux1=new char[25]; aux2=new char [25]; 
 	//Busca y lee el nick random 1 y copia a la cadena principal
 	while(!feof(archivo)){
